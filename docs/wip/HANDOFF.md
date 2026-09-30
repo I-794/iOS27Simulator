@@ -59,4 +59,9 @@ Each agent owns a set of app folders and writes its notes to a `docs/wip/agentX-
 - **D:** Settings is done; it keeps extra preferences in its own `ios27-settings` store. Passwords is not started.
 - **F:** Clock, Calendar and Reminders are done. Maps has only its map engine (`maps/geo.ts`, `maps/MapView.tsx`); the app screens aren't built. Weather and Find My are not started.
 - **G:** Music, Podcasts, Home, Wallet and Health are done. Fitness, News, Stocks, Calculator, Games and Magnifier are not started.
-- **C:** see its note in `docs/wip/`.
+- **C:** Safari is done. Mail is written and type-checks, but only its Inbox has been checked on screen. Preview has a shared document renderer (`preview/docs.tsx`) that Mail already uses; the Preview app screen isn't built. Notes and Files are not started.
+
+**All seven agents stopped cleanly. This is tonight's stopping point.**
+
+## Apps still to build tomorrow
+Phone screens, FaceTime, Camera, Passwords, Journal, Freeform, Maps screens, Weather, Find My, Fitness, News, Stocks, Calculator, Games, Magnifier, Notes, Files, and the Preview app screen.
