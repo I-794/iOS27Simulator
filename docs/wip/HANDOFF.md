@@ -48,9 +48,19 @@ Each agent owns a set of app folders and writes its notes to a `docs/wip/agentX-
 - `python3 tests/sheet.py out.png a.png b.png` joins screenshots into one contact sheet; it needs `pip install pillow`.
 - In dev builds, `window.__os` is the store, for debugging and tests.
 
-## Shared-file fixes the agents suggested (not applied yet)
+## Shared-file fixes the agents suggested — all applied (day 2)
 1. **`src/os/hooks.ts` › `useAppRoute`** (agent A): in development, React StrictMode runs the callback twice, so a deep link opens its page twice. Guard it with a ref keyed on `nonce` (`handled.current !== nonce`). Once that's fixed, agent A's `useRouteOnce` wrapper can be removed.
 2. **`src/art/Scene.tsx`** (agent E): render `gen:<id>` scenes with the stored generation. Add `if (scene.startsWith('gen:')) return <GenImage seed={scene.slice(4)} … />` and import GenImage. Without it, Image Playground images saved to Photos show up as the default sunset beach.
+3. **`src/art/Scene.tsx`** (agent B, optional): wrap the `extended` layers in the same `rotate(${reframe.tilt} …)` group, so a photo that's both extended and reframed has no seam.
+4. **`src/os/store.ts` › `notify`** (agent D): add `const muted = st.permissions[item.app]?.notifications === false` and require `!muted` before showing a banner, so the per-app Allow Notifications switch works.
+5. **`src/shell/actions.ts` › `pressAction('shortcut')`** (agent D): read `actionShortcut` from `localStorage['ios27-settings']` (the `state` field) and launch `shortcuts` with the route `run/<id>`.
+6. **`src/os/store.ts` › `isAppAllowed`** (agent D): honour `screenTime.downtime`; today the Downtime switch has no effect.
+7. **`src/shell/DynamicIsland.tsx` › `Minimal()`** (agent F): add a stopwatch case (TimerIcon, orange) instead of the lightning icon.
+8. **Podcast titles** (agent G): the island, Lock Screen, Control Center and music widget always look up `TRACKS` by `nowPlaying.trackId`; when `kind === 'podcast'`, show the episode from `nowPlaying.episodeId` instead.
+9. **`src/shell/services.ts`** music subscription (agent G): pause music when playback switches to a podcast.
+10. **Optional** (agent G): add a `'flight'` Live Activity kind; the boarding pass borrows `'sports'`.
+11. **`tests/shot.mjs`** (agent C): started timing out on the phone-only (`.screen`) screenshot; full-page screenshots still work.
+12. **`src/apps/mail/model.ts` › `findExistingEvent`** (agent C): only compares start times; the title check does nothing.
 
 ## Agent status at pause
 - **A:** Messages and Contacts are done. Phone is partial (its store and Call Context logic are written; the screens aren't). FaceTime is not started.

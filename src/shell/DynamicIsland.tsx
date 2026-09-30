@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Play, Pause, SkipForward, SkipBack, Phone, PhoneOff, MicOff, Timer as TimerIcon, Navigation, BellOff, Bell, Check, Airplay, Headphones, Wifi, Link2, BatteryCharging, Zap, Package, Circle, Square, Heart, ScanFace, Lock, CarFront } from 'lucide-react'
+import { Play, Pause, SkipForward, SkipBack, Phone, PhoneOff, MicOff, Timer as TimerIcon, Navigation, BellOff, Bell, Check, Airplay, Headphones, Wifi, Link2, BatteryCharging, Zap, Package, Circle, Square, Heart, ScanFace, Lock, CarFront, Plane } from 'lucide-react'
 import { useOS, playbackPosition } from '../os/store'
 import { useNow, useLongPress } from '../os/hooks'
-import { TRACKS } from '../os/data/media'
 import { fmtDuration } from '../os/time'
 import type { LiveActivity, AppId } from '../os/types'
 import { useShell } from './shellState'
 import { AlbumArt } from './widgets/AlbumArt'
+import { nowPlayingTrack } from '../os/nowPlaying'
 
 type Pres = 'idle' | 'compact' | 'expanded' | 'event'
 
@@ -142,7 +142,7 @@ function Elapsed({ since }: { since: number }) {
 
 function Compact({ a }: { a: LiveActivity }) {
   const np = useOS((s) => s.nowPlaying)
-  const track = TRACKS.find((t) => t.id === np.trackId)
+  const track = nowPlayingTrack(np)
   const L = (n: ReactNode) => <div className="isl-lead">{n}</div>
   const T = (n: ReactNode) => <div className="isl-trail">{n}</div>
   switch (a.kind) {
@@ -165,6 +165,8 @@ function Compact({ a }: { a: LiveActivity }) {
       return <>{L(<span className="airdrop-glyph" />)}{T(<span className="isl-num" style={{ color: '#0a84ff' }}>{Math.round((a.progress ?? 0) * 100)}%</span>)}</>
     case 'delivery':
       return <>{L(<Package size={18} color="#ff9f0a" />)}{T(<span className="isl-num">{(a.data?.eta as string) ?? ''}</span>)}</>
+    case 'flight':
+      return <>{L(<span className="isl-nav" style={{ color: '#64d2ff' }}><Plane size={16} /> <b>{(a.data?.flight as string) ?? ''}</b></span>)}{T(<span className="isl-num" style={{ color: '#64d2ff' }}>{(a.data?.status as string) ?? a.subtitle ?? ''}</span>)}</>
     case 'workout':
       return <>{L(<Heart size={16} fill="#ff375f" color="#ff375f" />)}{T(<span className="isl-num" style={{ color: '#ff375f' }}>{(a.data?.hr as number) ?? 120} BPM</span>)}</>
     case 'hotspot':
@@ -176,8 +178,9 @@ function Compact({ a }: { a: LiveActivity }) {
 
 function Minimal({ a }: { a: LiveActivity }) {
   const np = useOS((s) => s.nowPlaying)
-  if (a.kind === 'music') return <AlbumArt track={TRACKS.find((t) => t.id === np.trackId)} size={22} radius={11} />
-  if (a.kind === 'timer') return <TimerIcon size={18} color="#ff9f0a" />
+  if (a.kind === 'music') return <AlbumArt track={nowPlayingTrack(np)} size={22} radius={11} />
+  if (a.kind === 'timer' || a.kind === 'stopwatch') return <TimerIcon size={18} color="#ff9f0a" />
+  if (a.kind === 'flight') return <Plane size={16} color="#64d2ff" />
   if (a.kind === 'navigation') return <Navigation size={16} fill="#0a84ff" strokeWidth={0} />
   if (a.kind === 'call' || a.kind === 'facetime') return <Phone size={16} fill="#30d158" strokeWidth={0} />
   if (a.kind === 'recording') return <Circle size={14} fill="#ff453a" color="#ff453a" />
@@ -190,7 +193,7 @@ function Expanded({ a, onOpen }: { a: LiveActivity; onOpen: (app?: AppId) => voi
   const now = useNow(500)
   switch (a.kind) {
     case 'music': {
-      const track = TRACKS.find((t) => t.id === st.nowPlaying.trackId)!
+      const track = nowPlayingTrack(st.nowPlaying)
       const pos = playbackPosition(st.nowPlaying)
       return (
         <div className="isl-exp isl-music">

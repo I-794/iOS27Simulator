@@ -15,6 +15,7 @@ import { WeatherGlyph } from '../widgets/Widgets'
 import { fmtTime, fmtDuration, dayLabel, DAY, WEEKDAYS_SHORT, fmtRelative } from '../../os/time'
 import { AppIconArt, ICONS } from '../../icons/AppIconArt'
 import type { AppId } from '../../os/types'
+import { nowPlayingTrack } from '../../os/nowPlaying'
 
 function openApp(app: AppId, route?: string) {
   const st = useOS.getState()
@@ -140,7 +141,7 @@ function SiriCardView({ c, onSend }: { c: SiriCard; onSend?: (card: Extract<Siri
       )
     }
     case 'music': {
-      const t = TRACKS.find((x) => x.id === st.nowPlaying.trackId) ?? TRACKS.find((x) => x.id === c.trackId)!
+      const t = (st.nowPlaying.playing ? nowPlayingTrack(st.nowPlaying) : TRACKS.find((x) => x.id === c.trackId)) ?? nowPlayingTrack(st.nowPlaying)
       return (
         <div className="scard">
           <AlbumArt track={t} size={48} radius={8} />

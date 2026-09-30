@@ -44,6 +44,8 @@ export function Sheet({
   label?: string
 }) {
   const [render, setRender] = useState(open)
+  const openRef = useRef(open)
+  openRef.current = open
   const ref = useRef<HTMLDivElement>(null)
   const dimRef = useRef<HTMLDivElement>(null)
 
@@ -55,12 +57,16 @@ export function Sheet({
     const el = ref.current
     if (!el) return
     if (open) {
+      el.getAnimations().forEach((x) => x.cancel())
+      dimRef.current?.getAnimations().forEach((x) => x.cancel())
       animateSpring(el, [{ transform: 'translateY(105%)' }, { transform: 'translateY(0)' }], springs.sheet(), { fill: 'none' })
       if (dimRef.current) dimRef.current.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250, fill: 'none' })
     } else if (render) {
       const a = animateSpring(el, [{ transform: getComputedStyle(el).transform === 'none' ? 'translateY(0)' : getComputedStyle(el).transform }, { transform: 'translateY(105%)' }], springs.sheet())
       dimRef.current?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: 'forwards' })
-      a.onfinish = () => setRender(false)
+      a.onfinish = () => {
+        if (!openRef.current) setRender(false)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, render])

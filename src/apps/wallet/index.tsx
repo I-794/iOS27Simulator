@@ -282,7 +282,7 @@ function PassBody({ c }: { c: WalletCard }) {
       <List>
         {boarding && <Row title="Live Activity" subtitle="Gate & boarding updates on Lock Screen" toggle={{ value: shared, onChange: (v) => {
           setShared(v)
-          if (v) useOS.getState().startActivity({ id: 'flight-sk482', kind: 'sports', title: 'SK 482 · MGR → SEA', subtitle: `Gate ${d.Gate} · Boards ${d.Boards}`, app: 'wallet', priority: 1 })
+          if (v) useOS.getState().startActivity({ id: 'flight-sk482', kind: 'flight', title: 'SK 482 · MGR → SEA', data: { flight: 'SK 482', status: `Gate ${d.Gate}` }, subtitle: `Gate ${d.Gate} · Boards ${d.Boards}`, app: 'wallet', priority: 1 })
           else useOS.getState().endActivity('flight-sk482')
         } }} />}
         <Row title="Automatic Updates" toggle={{ value: true, onChange: () => useOS.getState().showToast('Pass updates setting saved') }} />

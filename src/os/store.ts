@@ -424,8 +424,9 @@ export const useOS = create<OSState>()(
         const item: NotificationItem = { id: n.id ?? uid('n'), ts: n.ts ?? now(), ...n } as NotificationItem
         const st = get()
         const quiet = st.focus && st.focus !== 'Personal' && !item.timeSensitive
+        const muted = st.permissions[item.app]?.notifications === false
         set({ notifications: [item, ...st.notifications].slice(0, 80) })
-        if (!quiet && !(st.openApp === item.app && !st.locked)) {
+        if (!quiet && !muted && !(st.openApp === item.app && !st.locked)) {
           set({ banner: item })
           window.clearTimeout(bannerTimer)
           bannerTimer = window.setTimeout(() => {
@@ -601,6 +602,7 @@ export function playbackPosition(np = useOS.getState().nowPlaying): number {
 export function isAppAllowed(app: AppId): { allowed: boolean; reason?: string } {
   const st = useOS.getState()
   const cfg = st.screenTime
+  if (cfg.downtime && !DOWNTIME_ALLOWED.includes(app)) return { allowed: false, reason: 'Downtime is on. Only always-allowed apps are available.' }
   if (!cfg.childMode) return { allowed: true }
   if (app === 'settings') return { allowed: true }
   if (!cfg.allowedApps.includes(app)) return { allowed: false, reason: `${cfg.childName}'s parent hasn't approved this app.` }
@@ -625,6 +627,9 @@ export function isAppAllowed(app: AppId): { allowed: boolean; reason?: string } 
   }
   return { allowed: true }
 }
+
+/** Apps that stay available during Downtime (Settings › Screen Time › Always Allowed). */
+export const DOWNTIME_ALLOWED: AppId[] = ['phone', 'messages', 'facetime', 'maps', 'settings', 'clock', 'contacts']
 
 export const APP_CATEGORY: Partial<Record<AppId, ScreenTimeConfig['allowances'][number]['category']>> = {
   games: 'Games', music: 'Entertainment', podcasts: 'Entertainment', news: 'Entertainment', messages: 'Social', facetime: 'Social',

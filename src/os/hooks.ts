@@ -33,8 +33,10 @@ export function useAppRoute(app: AppId, onRoute: (route: string) => void) {
   const nonce = useOS((s) => s.routeNonce)
   const cb = useRef(onRoute)
   cb.current = onRoute
+  const handled = useRef<number>(-1)
   useEffect(() => {
-    if (route) {
+    if (route && handled.current !== nonce) {
+      handled.current = nonce
       cb.current(route)
       const st = useOS.getState()
       const next = { ...st.appRoutes }

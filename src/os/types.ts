@@ -213,7 +213,7 @@ export interface NotificationItem {
 
 export interface LiveActivity {
   id: string
-  kind: 'timer' | 'music' | 'call' | 'navigation' | 'findmy' | 'sports' | 'delivery' | 'airdrop' | 'recording' | 'facetime' | 'workout' | 'stopwatch' | 'hotspot'
+  kind: 'timer' | 'flight' | 'music' | 'call' | 'navigation' | 'findmy' | 'sports' | 'delivery' | 'airdrop' | 'recording' | 'facetime' | 'workout' | 'stopwatch' | 'hotspot'
   title: string
   subtitle?: string
   progress?: number

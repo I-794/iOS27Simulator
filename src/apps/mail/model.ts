@@ -80,7 +80,7 @@ export function whenFromFacts(when?: string): number | null {
 
 export function findExistingEvent(title: string, start: number): CalendarEvent | undefined {
   const words = title.toLowerCase().split(/\W+/).filter((w) => w.length > 3)
-  return useOS.getState().events.find((e) => Math.abs(e.start - start) < 2 * MIN && (words.some((w) => e.title.toLowerCase().includes(w)) || true))
+  return useOS.getState().events.find((e) => Math.abs(e.start - start) < 2 * MIN && (words.length === 0 || words.some((w) => e.title.toLowerCase().includes(w))))
 }
 
 export function calendarFor(kind?: string, title = ''): string {

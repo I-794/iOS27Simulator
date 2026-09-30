@@ -2,6 +2,7 @@
  * simulator ships without third-party images. Scenes are drawn on a 400×300
  * (landscape) or 300×400 (portrait) canvas and cropped by the viewer. */
 import { memo, useId, type ReactNode } from 'react'
+import { GenImage } from './GenImage'
 
 type Ctx = { id: (s: string) => string; W: number; H: number }
 
@@ -655,6 +656,7 @@ interface SceneProps {
 /** Renders a generated photo scene. */
 export const Scene = memo(function Scene({ scene, className, style, fit = 'cover', extended, reframe, filter, title, removed, grain }: SceneProps) {
   const uidBase = useId().replace(/:/g, '')
+  if (scene.startsWith('gen:')) return <GenImage seed={scene.slice(4)} className={className} style={{ ...style, filter }} />
   const def = scenes[scene] ?? scenes['sunset-beach']
   const W = def.portrait ? 300 : 400
   const H = def.portrait ? 400 : 300
@@ -671,7 +673,7 @@ export const Scene = memo(function Scene({ scene, className, style, fit = 'cover
       aria-label={title ?? scene}
     >
       {extended && (
-        <g>
+        <g transform={reframe ? `rotate(${reframe.tilt} ${W / 2} ${H / 2})` : undefined}>
           <filter id={`${uidBase}-ext`}><feGaussianBlur stdDeviation="6" /></filter>
           <g filter={`url(#${uidBase}-ext)`} transform={`translate(${W / 2} ${H / 2}) scale(1.5) translate(${-W / 2} ${-H / 2})`}>{def.draw({ ...ctx, id: (s) => `${uidBase}-x-${s}` })}</g>
           <g transform={`translate(${W / 2} ${H / 2}) scale(1.28) translate(${-W / 2} ${-H / 2})`} opacity=".7">{def.draw({ ...ctx, id: (s) => `${uidBase}-y-${s}` })}</g>

@@ -83,9 +83,16 @@ export function pressAction() {
     case 'translate':
       st.showToast('Translate: listening… (simulated)')
       break
-    case 'shortcut':
-      st.launch('shortcuts')
+    case 'shortcut': {
+      let id: string | undefined
+      try {
+        id = JSON.parse(localStorage.getItem('ios27-settings') ?? '{}')?.state?.actionShortcut
+      } catch {
+        id = undefined
+      }
+      st.launch('shortcuts', id ? { route: `run/${id}` } : undefined)
       break
+    }
   }
 }
 

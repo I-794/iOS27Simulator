@@ -2,12 +2,12 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { Plane, Antenna, Wifi, Bluetooth, Link2, Airplay, Lock, RotateCcw, Moon, Sun, Volume2, Flashlight, Timer, Calculator, Camera, Circle, House, BatteryLow, Ear, ScanLine, Contrast, Tv, Play, Pause, SkipForward, SkipBack, Plus, Minus, Power, BedDouble, BookOpen, Car, Dumbbell, User, Headphones, Speaker, Check, MonitorSmartphone, SunDim, Eye, Mic, Music2 } from 'lucide-react'
 import { useOS, playbackPosition } from '../os/store'
 import { useNow, useLongPress, useDrag } from '../os/hooks'
-import { TRACKS } from '../os/data/media'
 import { BigSlider, Glass } from '../ui/controls'
 import { springs, animateSpring } from '../os/spring'
 import { AlbumArt } from './widgets/AlbumArt'
 import { startTimer } from '../os/ai/siri'
 import { fmtDuration } from '../os/time'
+import { nowPlayingTrack } from '../os/nowPlaying'
 
 type Panel = null | 'connectivity' | 'media' | 'focus' | 'brightness' | 'volume' | 'timer' | 'gallery'
 
@@ -49,10 +49,13 @@ export function ControlCenter() {
     const el = ref.current
     if (!el) return
     if (open && !prev.current) {
+      el.getAnimations().forEach((x) => x.cancel())
       animateSpring(el, [{ opacity: 0, transform: 'translateY(-40px) scale(.96)' }, { opacity: 1, transform: 'none' }], springs.sheet(), { fill: 'none' })
     } else if (!open && prev.current) {
       const a = el.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-30px) scale(.97)' }], { duration: 200, easing: 'ease-in', fill: 'forwards' })
-      a.onfinish = () => setRender(false)
+      a.onfinish = () => {
+        if (useOS.getState().overlay !== 'cc') setRender(false)
+      }
     }
     prev.current = open
   }, [open, render])
@@ -193,7 +196,7 @@ function MediaModule({ onExpand }: { onExpand: () => void }) {
   const np = useOS((s) => s.nowPlaying)
   const toggle = useOS((s) => s.togglePlay)
   const next = useOS((s) => s.nextTrack)
-  const track = TRACKS.find((t) => t.id === np.trackId)!
+  const track = nowPlayingTrack(np)
   const lp = useLongPress(onExpand)
   return (
     <Glass className="cc-module cc-2x2 cc-media" variant="clear" {...lp} onClick={(e: React.MouseEvent) => !(e.target as HTMLElement).closest('button') && onExpand()}>
@@ -242,7 +245,7 @@ function CCPanel({ panel, onClose }: { panel: NonNullable<Panel>; onClose: () =>
     )
   } else if (panel === 'media') {
     const np = st.nowPlaying
-    const track = TRACKS.find((t) => t.id === np.trackId)!
+    const track = nowPlayingTrack(np)
     const pos = playbackPosition(np)
     void now
     const devices = [

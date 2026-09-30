@@ -3,7 +3,6 @@ import { Flashlight, Camera, Play, Pause, SkipBack, SkipForward, X, Lock, CloudS
 import { useOS, playbackPosition } from '../os/store'
 import { useNow, screenScale } from '../os/hooks'
 import { fmtClock, fmtDuration, WEEKDAYS, MONTHS, fmtTime } from '../os/time'
-import { TRACKS } from '../os/data/media'
 import { WEATHER } from '../os/data/world'
 import { Wallpaper, WALLPAPERS } from '../art/Wallpaper'
 import { AlbumArt } from './widgets/AlbumArt'
@@ -11,6 +10,7 @@ import { NotificationList, NotificationCard } from './Notifications'
 import { springs, animateSpring } from '../os/spring'
 import { Glass, AISparkle } from '../ui/controls'
 import { Sheet } from '../ui/overlay'
+import { nowPlayingTrack } from '../os/nowPlaying'
 
 export const LOCK_PROFILES = [
   { name: 'Default', wallpaper: 'sequoia', clockStyle: 'bold' as const, clockColor: '#ffffff', position: 'center' as const },
@@ -44,10 +44,14 @@ export function LockScreen() {
     const el = ref.current
     if (!el) return
     if (show && !prev.current) {
+      // cancel an in-flight dismiss (e.g. pulling Notification Center down right after unlocking)
+      el.getAnimations().forEach((x) => x.cancel())
       animateSpring(el, [{ transform: 'translateY(-100%)' }, { transform: 'translateY(0)' }], springs.sheet(), { fill: 'none' })
     } else if (!show && prev.current) {
       const a = animateSpring(el, [{ transform: el.style.transform || 'translateY(0)' }, { transform: 'translateY(-100%)' }], springs.sheet())
       a.onfinish = () => {
+        const s = useOS.getState()
+        if (s.locked || s.overlay === 'nc') return
         setRender(false)
         el.style.transform = ''
       }
@@ -286,7 +290,7 @@ function NowPlayingPlatter() {
   const set = useOS((s) => s.set)
   useNow(1000)
   const [dx, setDx] = useState(0)
-  const track = TRACKS.find((t) => t.id === np.trackId)!
+  const track = nowPlayingTrack(np)
   const pos = playbackPosition(np)
   const dismiss = () => {
     if (np.playing) toggle()

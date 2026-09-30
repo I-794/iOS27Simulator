@@ -3,7 +3,6 @@ import { Sun, Cloud, CloudSun, CloudRain, CloudLightning, Moon, CloudMoon, Play,
 import { useOS, playbackPosition } from '../../os/store'
 import { useNow } from '../../os/hooks'
 import { WEATHER, SCREEN_TIME_USAGE } from '../../os/data/world'
-import { TRACKS } from '../../os/data/media'
 import { CALENDARS } from '../../os/data/life'
 import { WEEKDAYS, MONTHS, fmtTime, startOfDay, DAY, WEEKDAYS_SHORT } from '../../os/time'
 import { Scene } from '../../art/Scene'
@@ -13,6 +12,7 @@ import { tryLaunch } from '../AppIcon'
 import { openSiri } from '../actions'
 import type { WidgetSize } from '../../os/store'
 import type { AppId } from '../../os/types'
+import { nowPlayingTrack } from '../../os/nowPlaying'
 
 export function WeatherGlyph({ icon, size = 20, color }: { icon: string; size?: number; color?: string }) {
   const p = { size, strokeWidth: 2, color }
@@ -172,7 +172,7 @@ function MusicWidget({ size }: { size: WidgetSize }) {
   const toggle = useOS((s) => s.togglePlay)
   const next = useOS((s) => s.nextTrack)
   useNow(np.playing ? 1000 : 60_000)
-  const track = TRACKS.find((t) => t.id === np.trackId)!
+  const track = nowPlayingTrack(np)
   const pos = playbackPosition(np)
   return (
     <div className="w-pad w-music" style={{ background: `linear-gradient(135deg, hsl(${track.hue} 55% 38%), hsl(${(track.hue + 40) % 360} 60% 18%))`, color: '#fff' }}>

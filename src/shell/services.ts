@@ -152,7 +152,10 @@ export function startServices(): () => void {
     if (np === prev) return
     const was = prev
     prev = np
-    if (np.kind !== 'music') return
+    if (np.kind !== 'music') {
+      if (was.kind === 'music' && was.playing) music.pause()
+      return
+    }
     if (!np.playing) {
       if (was.playing) music.pause()
       return
