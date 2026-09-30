@@ -23,6 +23,9 @@ export const Thumb = memo(function Thumb({ photo, selecting, selected, blur, rea
   )
 })
 
+/** Landscape shows more columns, like Photos. */
+export const effCols = (cols: number, land: boolean) => (land ? Math.max(2, Math.round(cols * 1.8)) : cols)
+
 export function thumbMenu(el: HTMLElement, p: Photo, onOpen: () => void) {
   const os = useOS.getState()
   openMenu(el, [
@@ -54,6 +57,8 @@ export function PhotoGrid({ photos, cols = 3, selecting, selected, onToggle, onO
   gap?: number
 }) {
   const lp = useRef<{ t?: number; fired: boolean; x: number; y: number }>({ fired: false, x: 0, y: 0 })
+  const land = useOS((s) => s.orientation === 'landscape')
+  const nCols = effCols(cols, land)
   const find = (t: EventTarget) => (t as HTMLElement).closest('[data-pid]') as HTMLElement | null
   const byId = (id: string) => photos.find((p) => p.id === id)
   return (
@@ -61,7 +66,7 @@ export function PhotoGrid({ photos, cols = 3, selecting, selected, onToggle, onO
       {header}
       <div
         className="ph-grid"
-        style={{ gridTemplateColumns: `repeat(${cols}, 1fr)`, gap }}
+        style={{ gridTemplateColumns: `repeat(${nCols}, 1fr)`, gap }}
         onPointerDown={(e) => {
           const cell = find(e.target)
           if (!cell || e.button !== 0) return

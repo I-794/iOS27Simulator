@@ -11,7 +11,7 @@ export interface PhEdits extends PhotoEdits {
   /** width/height ratio chosen with Extend */
   extendRatio?: number
   cropAspect?: 'original' | 'square' | '16:9' | '4:5' | '3:2'
-  cleanMode?: 'fast' | 'hq'
+  cleanMode?: 'fast' | 'hq' | 'auto'
   /** non-destructive capture look from Camera (not counted as an edit) */
   capture?: { style?: string; exposure?: number; zoom?: number; mirror?: boolean; blur?: boolean }
 }
@@ -68,7 +68,7 @@ export function isAIEdited(p: Photo): boolean {
 export function aiEditNotes(p: Photo): string[] {
   const e = edits(p)
   const out: string[] = []
-  if (e.cleanedUp?.length) out.push(`Clean Up${e.cleanMode === 'hq' ? ' (High Quality)' : ''}: removed ${e.cleanedUp.length} object${e.cleanedUp.length > 1 ? 's' : ''}`)
+  if (e.cleanedUp?.length) out.push(`Clean Up${e.cleanMode === 'hq' ? ' (High Quality)' : e.cleanMode === 'auto' ? ' (Auto)' : ''}: removed ${e.cleanedUp.length} object${e.cleanedUp.length > 1 ? 's' : ''}`)
   if (e.extended) out.push(`Extend: canvas expanded${e.extendRatio ? ` to ${ratioLabel(e.extendRatio)}` : ''} with generative fill`)
   if (e.reframe) out.push(`Spatial Reframing: pan ${Math.round(e.reframe.x)}, ${Math.round(e.reframe.y)} · tilt ${e.reframe.tilt.toFixed(1)}°`)
   return out

@@ -47,7 +47,8 @@ function EditorInner({ photo }: { photo: Photo }) {
   const [tool, setTool] = useState<Tool>('adjust')
   const [adj, setAdj] = useState<'exposure' | 'brilliance' | 'saturation'>('exposure')
   const [compare, setCompare] = useState(false)
-  const [mode, setMode] = useState<'fast' | 'hq'>(orig.cleanMode ?? 'fast')
+  const [mode, setMode] = useState<'fast' | 'hq' | 'auto'>(orig.cleanMode ?? 'auto')
+  const [runMode, setRunMode] = useState<'fast' | 'hq'>('fast')
   const [removing, setRemoving] = useState<Removal[]>([])
   const [progress, setProgress] = useState(0)
   const [cleanNote, setCleanNote] = useState<string | null>(null)
@@ -89,11 +90,14 @@ function EditorInner({ photo }: { photo: Photo }) {
   const removeObjects = (ids: string[]) => {
     const targets = remaining.filter((o) => ids.includes(o.id))
     if (!targets.length) return
-    const dur = mode === 'hq' ? 2400 : 900
+    const complex = targets.some((o) => /person|tourist|walker/i.test(o.label) || o.bbox[2] * o.bbox[3] > 3000)
+    const eff: 'fast' | 'hq' = mode === 'auto' ? (complex ? 'hq' : 'fast') : mode
+    setRunMode(eff)
+    const dur = eff === 'hq' ? 2400 : 900
     const now = performance.now()
     setRemoving((r) => [...r, ...targets.map((o) => ({ id: o.id, box: mapBox(photo.scene, draft, ratio, o.bbox), start: now, dur }))])
     setCleanNote(null)
-    if (mode === 'hq') {
+    if (eff === 'hq') {
       setProgress(0)
       const t0 = performance.now()
       const iv = window.setInterval(() => {
@@ -107,9 +111,12 @@ function EditorInner({ photo }: { photo: Photo }) {
       setDraft((d) => ({ ...d, cleanedUp: [...(d.cleanedUp ?? []), ...targets.map((o) => o.id)] }))
       setRemoving((r) => r.filter((x) => !targets.some((o) => o.id === x.id)))
       setProgress(0)
-      setCleanNote(mode === 'hq'
-        ? `Removed ${targets.map((o) => o.label.toLowerCase()).join(', ')} · High Quality reconstructed texture, lighting and shadows.`
-        : `Removed ${targets.map((o) => o.label.toLowerCase()).join(', ')} · Fast fill. Try High Quality for complex backgrounds.`)
+      const what = targets.map((o) => o.label.toLowerCase()).join(', ')
+      setCleanNote(mode === 'auto'
+        ? `Removed ${what} · Auto chose ${eff === 'hq' ? 'High Quality for the complex background' : 'Fast for a simple background'}.`
+        : eff === 'hq'
+          ? `Removed ${what} · High Quality reconstructed texture, lighting and shadows.`
+          : `Removed ${what} · Fast fill. Try High Quality for complex backgrounds.`)
     }, dur)
   }
 
@@ -268,7 +275,7 @@ function EditorInner({ photo }: { photo: Photo }) {
             return <button key={o.id} className="ph-cu-obj" style={{ left: `${b.left}%`, top: `${b.top}%`, width: `${b.width}%`, height: `${b.height}%` }} aria-label={`Remove ${o.label}`} onPointerDown={(e) => { e.stopPropagation(); if (!removing.length) removeObjects([o.id]) }} />
           })}
           {removing.map((r) => (
-            <div key={r.id} className={`ph-cu-fill ${mode}`} style={{ left: `${r.box.left}%`, top: `${r.box.top}%`, width: `${r.box.width}%`, height: `${r.box.height}%`, animationDuration: `${r.dur}ms` }}>
+            <div key={r.id} className={`ph-cu-fill ${runMode}`} style={{ left: `${r.box.left}%`, top: `${r.box.top}%`, width: `${r.box.width}%`, height: `${r.box.height}%`, animationDuration: `${r.dur}ms` }}>
               {Array.from({ length: 6 }).map((_, i) => <span key={i} className="ph-spark" style={{ left: `${(i * 37) % 100}%`, top: `${(i * 53) % 100}%`, animationDelay: `${i * 90}ms` }}>✦</span>)}
             </div>
           ))}
@@ -331,11 +338,11 @@ function EditorInner({ photo }: { photo: Photo }) {
         )}
         {tool === 'cleanup' && (
           <>
-            <Segmented options={['fast', 'hq'] as const} value={mode} onChange={setMode} labels={{ fast: 'Fast', hq: 'High Quality' }} style={{ margin: '0 16px' }} />
+            <Segmented options={['fast', 'hq', 'auto'] as const} value={mode} onChange={setMode} labels={{ fast: 'Fast', hq: 'High Quality', auto: 'Auto' }} style={{ margin: '0 16px' }} />
             {removing.length > 0 ? (
               <div className="ph-cu-status">
-                <div className="ph-cu-progress"><div style={{ width: mode === 'hq' ? `${progress * 100}%` : '100%' }} className={mode === 'fast' ? 'indeterminate' : ''} /></div>
-                <span className="t-footnote">{mode === 'hq' ? `Generating in High Quality… ${Math.round(progress * 100)}%` : 'Cleaning up…'}</span>
+                <div className="ph-cu-progress"><div style={{ width: runMode === 'hq' ? `${progress * 100}%` : '100%' }} className={runMode === 'fast' ? 'indeterminate' : ''} /></div>
+                <span className="t-footnote">{runMode === 'hq' ? `${mode === 'auto' ? 'Auto · ' : ''}Generating in High Quality… ${Math.round(progress * 100)}%` : `${mode === 'auto' ? 'Auto · ' : ''}Cleaning up…`}</span>
               </div>
             ) : (
               <>

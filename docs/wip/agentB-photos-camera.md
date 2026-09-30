@@ -16,17 +16,30 @@ Dev server port 5182, screenshots in scratch `agentB/`. `npx tsc -p tsconfig.app
 - `Search.tsx`, `Slideshow.tsx` (setup: include/exclude, add, theme Ken Burns/Classic/Origami, music via store playTrack, timing, repeat; player with crossfades; **Save as Video** → addPhoto kind video), `Sheets.tsx` (SelectBar, AlbumPicker, PhotoPicker, FaceIDGate, FaceChip, Photos Settings sheet: Prioritize Sync + Photo Shuffle pet/kind/include-me w/ preview).
 - `back.ts`: stack of Escape/ios-back handlers (top overlay closes first).
 
-## Camera (`src/apps/camera/`) — NOT STARTED (only helper written)
-- `index.tsx` is still the original placeholder.
-- `actions.ts` DONE: `runVisionAction(action)` handles reminder (parseWhen), event, note, search/shop (Safari), map (MAP_PLACES → maps route), weather, copy, ask (runSiri), split/pay (returns text). `money()`.
+## Camera (`src/apps/camera/`) — DONE (day 2, screenshot-verified, no console errors)
+- `index.tsx`: black full-bleed UI (statusOverride light). The viewfinder is an extended Scene with a slow pan, zoomed via transform.
+  - Modes: TIME-LAPSE / SLO-MO / VIDEO / PHOTO / PORTRAIT / PANO / SIRI (tap or swipe the wheel or the viewfinder).
+  - Zoom: .5/1/2/5 pills with lens-switch crossfade, long-press zoom dial, vertical drag zoom. Tap to focus; long-press for AE/AF lock.
+  - Capture: shutter flash/blink plus `playAlert('shutter')`, then the thumbnail flies into the photo well. `addPhoto` runs instantly with lens/aperture/ISO/size/keywords/`edits.capture` (style, exposure, zoom, mirror).
+  - Timer countdown. Video/slo-mo/time-lapse recording with a timer and the red stop shutter. Pano sweep saves a panorama.
+  - Front camera (flip) and Portrait depth blur. Grid, level and histogram overlays.
+  - Low Power: stepped 30 fps pan plus a badge. Reach mode moves the pinned controls down above the mode wheel.
+  - Routes `siri`, `video`, `selfie`, `scan`. Scan shows a QR poster, the frame locks onto it, and a pill opens Safari at `url/lincoln.example/calendar`.
+  - Landscape: controls column on the left; modes and the shutter on the right edge.
+- iOS 27 customizable controls: the six-dot button opens the Camera Controls panel with an **Edit** mode to pin or unpin up to 5 controls in the top row (persisted as `useCam.pinned`, `ios27-camera`). Pro controls (iPhone 18 Pro): aperture, shutter speed, white balance, histogram.
+- `SiriMode.tsx`:
+  - Demo scene strip (CAMERA_DEMO_SCENES plus local **Flyer** and **Translate** scenes) and a glowing reticle. Ask field and suggestions. Result card: summary, details, actions via `runVisionAction`, Q&A via `camAnswer`, which falls back to `answerAbout`.
+  - Split-bill calculator with a people stepper and per-person amounts.
+  - **Apple Cash** sheet (portaled to the camera root): request/send, amount stepper, recipient chips incl. the Drumline group, note, Face ID animation. On success it `sendMessage`s to `c-drumline` or 1:1 conversations, patches them to delivered, and shows a toast.
+- `extra.ts`: camera-local insights: event flyer → Calendar/Reminder/Directions, Spanish menu → translation, and nutrition facts for food scenes. `photos/extraScenes.tsx` draws the `cam-flyer` / `cam-sign` scenes (PhotoView renders them, so captures of them show correctly in Photos).
+- `cstore.ts` holds settings, `actions.ts` the vision action runner.
 
-### Next steps for Camera (spec in original task)
-1. `camera/index.tsx` + `camera.css` (prefix `.cam-`): black full-bleed, statusOverride light; viewfinder = large `Scene` with slow CSS pan (default 'autumn-trees'), grid/level overlays, focus tap square; mode wheel TIME-LAPSE/SLO-MO/VIDEO/PHOTO/PORTRAIT/PANO/SIRI; shutter w/ flash + `playAlert('shutter', volume)` + thumbnail fly-in to well; `addPhoto({scene, kind, capturedByMe:true, lens by zoom, keywords: SCENE_KEYWORDS, edits:{capture:{style,exposure,zoom}}})` (import from `../photos/look`); well → `launch('photos',{route:'photo/<id>'})`; video timer/red shutter → kind 'video' w/ duration.
-2. Zoom pills .5/1/2/5 (scale + crossfade), vertical drag zoom, long-press zoom dial; Reach toggle (top controls moved down); settings sheet (flash, Live, timer, exposure, styles STYLES, aspect 4:3/16:9/1:1, HEIF/48MP/ProRAW, grid, level); Low Power badge + reduced frame rate (`steps()` animation).
-3. Siri mode: CAMERA_DEMO_SCENES strip, glowing reticle, ask field + suggestions, result card from SCENE_INSIGHTS, actions via `runVisionAction`; split calculator; Apple Cash sheet (amount, recipients, Face ID anim → `sendMessage` to `c-drumline`/ensureConversation + toast); free-form `answerAbout(scene,q)`; `useOnscreen('camera', label, {type:'camera', scene})`.
-4. Routes `scan` (QR "lincoln.example/calendar" → Safari `url/lincoln.example/calendar`), `siri`, `video`, `selfie`; landscape layout (shutter on right edge).
+## Day-2 Photos changes
+- Clean Up has **Fast / High Quality / Auto**. Auto picks HQ for people or large objects, otherwise Fast, and says which it chose.
+- Grids show more columns in landscape (`effCols`). Captured by Me excludes ID documents and AI images.
+- Checked in dark mode (library, collections, info, settings sheet) and landscape (library, collections, viewer + side info panel).
 
 ## Known issues / notes
 - Scene `reframe.tilt` rotates only the main layer; with Extend on, the blurred extension ring stays unrotated (visible seam). PhotoView adds a small zoom when tilted to hide empty corners. A shared Scene fix would rotate the extension layers too (src/art/Scene.tsx).
 - Sheets rendered inside NavStack pages sit below the app tab bar; the tab bar is hidden via `.ph-root:has(.sheet)`.
-- Not yet re-verified after last change: search refine + pet face crop centering (tsc clean). Dark mode & landscape not yet screenshot-verified for Photos.
+- The landscape tab bar is the shared TabBar (full width). A Siri-mode typed question needs the result panel scrolled; it scrolls to the latest answer automatically.

@@ -93,7 +93,7 @@ export const Buildings3D = memo(function Buildings3D() {
 })
 
 export function MapView({
-  camera, onCamera, interactive = true, animate = false, pins = [], routes = [], user, buildings3d, labels = true, onTap, className = '', children, layerChildren, anchorY = 0.5, minZ = 0.38, maxZ = 3.2,
+  camera, onCamera, interactive = true, animate = false, pins = [], routes = [], user, buildings3d, labels = true, onTap, className = '', children, layerChildren, anchorY = 0.5, anchorX = 0.5, minZ = 0.38, maxZ = 3.2,
 }: {
   camera: Camera
   onCamera?: (c: Camera) => void
@@ -109,6 +109,7 @@ export function MapView({
   children?: ReactNode
   layerChildren?: ReactNode
   anchorY?: number
+  anchorX?: number
   minZ?: number
   maxZ?: number
 }) {
@@ -130,7 +131,7 @@ export function MapView({
   const heading = camera.heading ?? 0
   const tilt = camera.tilt ?? 0
   const z = camera.z
-  const ax = size.w / 2
+  const ax = size.w * anchorX
   const ay = size.h * anchorY
   const layerT = `translate(${ax}px, ${ay}px) rotateX(${tilt}deg) rotate(${-heading}deg) scale(${z}) translate(${-camera.x}px, ${-camera.y}px)`
   const bill = `scale(${1 / z}) rotate(${heading}deg) rotateX(${-tilt}deg)`

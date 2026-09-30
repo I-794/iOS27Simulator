@@ -3,7 +3,7 @@ import { Ellipsis, ZoomIn, ZoomOut, Filter, Heart, Wand2, Video, Smartphone, Pla
 import { useOS } from '../../os/store'
 import { openMenu } from '../../ui/overlay'
 import { Glass } from '../../ui/controls'
-import { PhotoGrid } from './Grid'
+import { PhotoGrid, effCols } from './Grid'
 import { PhotoView } from './PhotoView'
 import { SelectBar } from './Sheets'
 import { usePh, useUI, useLibrary, openViewer } from './pstore'
@@ -39,6 +39,8 @@ export function LibraryTab({ active }: { active: boolean }) {
   const zoom = usePh((s) => s.zoom)
   const cols = usePh((s) => s.cols)
   const libFilter = usePh((s) => s.libFilter)
+  const land = useOS((s) => s.orientation === 'landscape')
+  const nCols = effCols(cols, land)
   const [selecting, setSelecting] = useState(false)
   const [sel, setSel] = useState<Set<string>>(new Set())
   const [topLabel, setTopLabel] = useState('')
@@ -89,14 +91,14 @@ export function LibraryTab({ active }: { active: boolean }) {
     const cell = grid.firstElementChild as HTMLElement | null
     const rowH = (cell?.offsetHeight ?? 130) + 2
     const row = Math.max(0, Math.floor((el.scrollTop + 110 - grid.offsetTop) / rowH))
-    const p = items[Math.min(items.length - 1, row * cols)]
-    const last = items[Math.min(items.length - 1, row * cols + cols * 5)]
+    const p = items[Math.min(items.length - 1, row * nCols)]
+    const last = items[Math.min(items.length - 1, row * nCols + nCols * 5)]
     if (!p) return
     const a = fmtShortDate(p.ts)
     const b = fmtShortDate(last.ts)
     setTopLabel(a === b ? `${a}${p.place ? ` · ${p.place}` : ''}` : `${a} – ${b}`)
   }
-  useEffect(updateLabel, [items, cols, zoom]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(updateLabel, [items, nCols, zoom]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const setZoom = (z: 'years' | 'months' | 'all') => usePh.getState().set({ zoom: z })
   const jumpTo = (id: string) => {

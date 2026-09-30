@@ -155,7 +155,7 @@ export function resolveCollection(cid: string, lib: Photo[], all: Photo[], share
   const [kind, arg] = cid.includes(':') ? [cid.slice(0, cid.indexOf(':')), cid.slice(cid.indexOf(':') + 1)] : [cid, '']
   switch (kind) {
     case 'favorites': return { id: cid, title: 'Favorites', photos: lib.filter((p) => p.favorite), kind: 'plain' }
-    case 'captured': return { id: cid, title: 'Captured by Me', subtitle: 'Photos and videos taken on this iPhone', photos: lib.filter((p) => p.capturedByMe && p.kind !== 'screenshot'), kind: 'plain' }
+    case 'captured': return { id: cid, title: 'Captured by Me', subtitle: 'Photos and videos taken on this iPhone', photos: lib.filter((p) => p.capturedByMe && p.kind !== 'screenshot' && !p.idDocument && !p.aiGenerated), kind: 'plain' }
     case 'recents': return { id: cid, title: 'Recently Saved', photos: [...lib].sort((a, b) => b.ts - a.ts).slice(0, 30).reverse(), kind: 'plain' }
     case 'videos': return { id: cid, title: 'Videos', photos: lib.filter((p) => p.kind === 'video'), kind: 'plain' }
     case 'selfies': return { id: cid, title: 'Selfies', photos: lib.filter((p) => p.keywords.includes('selfie') || /front/i.test(p.lens ?? '')), kind: 'plain' }

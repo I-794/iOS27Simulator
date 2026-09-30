@@ -153,7 +153,7 @@ export function CollectionsRoot() {
       </List>
 
       <List header="Utilities">
-        <Row title="Captured by Me" detail={count((p) => p.capturedByMe && p.kind !== 'screenshot')} icon={<span className="ph-list-ic">{ICONS.captured}</span>} chevron onClick={() => push('captured')} />
+        <Row title="Captured by Me" detail={count((p) => p.capturedByMe && p.kind !== 'screenshot' && !p.idDocument && !p.aiGenerated)} icon={<span className="ph-list-ic">{ICONS.captured}</span>} chevron onClick={() => push('captured')} />
         <Row title="Identity Documents" detail={count((p) => !!p.idDocument)} icon={<span className="ph-list-ic">{ICONS.ids}</span>} chevron onClick={() => push('ids')} />
         <Row title="Duplicates" detail={dupCount} icon={<span className="ph-list-ic">{ICONS.duplicates}</span>} chevron onClick={() => push('duplicates')} />
         <Row title="Hidden" detail={<Lock size={15} />} icon={<span className="ph-list-ic">{ICONS.hidden}</span>} chevron onClick={() => push('hidden')} />
