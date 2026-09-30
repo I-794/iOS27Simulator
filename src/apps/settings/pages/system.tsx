@@ -53,7 +53,7 @@ function BatteryPage() {
             <div className="t-footnote secondary">{st.charging ? `Charging · Optimized to ${prefs.chargeLimit}%` : 'Last charged to 100% · 7:42 AM'}</div>
           </div>
           <div className="grow" />
-          <Button size="small" variant={st.charging ? 'filled' : 'gray'} onClick={() => st.set({ charging: !st.charging })}><Plug size={14} /> {st.charging ? 'Unplug' : 'Plug In'}</Button>
+          <Button size="small" style={{ whiteSpace: 'nowrap' }} variant={st.charging ? 'filled' : 'gray'} onClick={() => st.set({ charging: !st.charging })}><Plug size={14} /> {st.charging ? 'Unplug' : 'Plug In'}</Button>
         </div>
         <Row title="Battery Percentage" toggle={{ value: prefs.batteryPct, onChange: (v) => prefs.setP({ batteryPct: v }) }} />
         <Row icon={<Ico c="#ffcc00" i={Zap} fill />} title="Low Power Mode" toggle={{ value: st.lowPower, onChange: (v) => st.set({ lowPower: v }), color: '#ffcc00' }} />
@@ -95,7 +95,7 @@ function BatteryPage() {
             ))}
           </div>
           <div className="stg-bar-axis t-caption2 secondary">
-            {range === '24h' ? ['12 AM', '6', '12 PM', '6'].map((t) => <span key={t}>{t}</span>) : ['10 d', '7 d', '4 d', 'Today'].map((t) => <span key={t}>{t}</span>)}
+            {range === '24h' ? ['12 AM', '6', '12 PM', '6'].map((t, i) => <span key={i}>{t}</span>) : ['10 d', '7 d', '4 d', 'Today'].map((t) => <span key={t}>{t}</span>)}
           </div>
         </div>
         <div className="stg-batt-stats">

@@ -312,7 +312,7 @@ export function KeyboardHost() {
           <Smile size={22} strokeWidth={1.8} />
         </button>
         <button className="kb-key kb-space" style={{ height: keyH }} onClick={space}>
-          {multilingual ? (lang === 'EN' ? 'English · Español' : 'Español · English') : 'space'}
+          {multilingual && !landscape ? (lang === 'EN' ? 'English · Español' : 'Español · English') : 'space'}
         </button>
         <button className="kb-key kb-fn wide kb-return" style={{ height: keyH }} onClick={returnKey} aria-label="Return">
           {field?.enterKeyHint === 'send' ? <ArrowUp size={20} strokeWidth={2.4} /> : field?.enterKeyHint === 'search' ? 'search' : field?.enterKeyHint === 'go' ? 'go' : <CornerDownLeft size={20} strokeWidth={2} />}

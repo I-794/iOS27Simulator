@@ -237,6 +237,7 @@ export interface SettingsPrefs {
   downtimeTo: string
   appLimits: Record<string, number>
   childSetupDone: boolean
+  siriAiWaitlist: 'none' | 'joined' | 'available'
 }
 
 export const DEFAULT_PREFS: SettingsPrefs = {
@@ -338,6 +339,7 @@ export const DEFAULT_PREFS: SettingsPrefs = {
   downtimeTo: '07:00',
   appLimits: { Social: 60, Games: 45 },
   childSetupDone: false,
+  siriAiWaitlist: 'none',
 }
 
 interface PrefsStore extends SettingsPrefs {

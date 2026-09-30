@@ -134,8 +134,9 @@ function Recorder({ onCancel, onSend }: { onCancel: () => void; onSend: (dur: nu
   )
 }
 
-export function Composer({ conv, sms, replyTo, onCancelReply, chips, onOpenDrawing, onOpenPhotos, onOpenCamera, fieldRef, editing, onEditDone }: {
+export function Composer({ conv, sms, replyTo, onCancelReply, chips, onOpenDrawing, onOpenPhotos, onOpenCamera, fieldRef, editing, onEditDone, service = 'iMessage' }: {
   conv: Conversation
+  service?: string
   editing?: Message | null
   onEditDone?: () => void
   sms: boolean
@@ -193,7 +194,7 @@ export function Composer({ conv, sms, replyTo, onCancelReply, chips, onOpenDrawi
   }
 
   const recipient = conv.participants.length === 1 ? conv.participants[0] : conv.participants[0]
-  const placeholder = sms ? 'Text Message • SMS' : 'iMessage'
+  const placeholder = sms ? `Text Message • ${service}` : 'iMessage'
 
   return (
     <div className="msg-composer">

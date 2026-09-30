@@ -432,7 +432,7 @@
   text-align: left;
   touch-action: pan-y;
 }
-.lock .notif, .banner .notif { --glass-medium: rgb(var(--glass-base-rgb) / calc(0.55 + var(--glass-tint) * 0.35)); }
+.lock .notif, .banner .notif { --glass-medium: rgb(var(--glass-base-rgb) / calc(0.2 + var(--glass-tint) * 0.74)); }
 .notif.compact { padding: 10px 12px; }
 .notif-icon { flex-shrink: 0; position: relative; }
 .notif-icon .app-icon-art { border-radius: 9px; box-shadow: none; }

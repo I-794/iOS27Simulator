@@ -44,23 +44,9 @@ function DisplayPage() {
   const [aod, setAod] = useState(true)
   const [zoom, setZoom] = useState<'Default' | 'Larger Text'>('Default')
   return (
-    <HeroPage title="Display & Brightness" icon={<Ico c="#007aff" i={Sun} size={60} />} blurb="Adjust brightness, switch between Light and Dark Mode, and tune how Liquid Glass looks across iPhone.">
-      <List header="Appearance">
-        <div className="stg-appearance">
-          {(['light', 'dark'] as const).map((t) => (
-            <button key={t} className="stg-appearance-opt" onClick={() => st.set({ theme: t })} aria-pressed={st.theme === t}>
-              <MiniPhone dark={t === 'dark'} wallpaper={st.wallpaper} />
-              <span>{t === 'light' ? 'Light' : 'Dark'}</span>
-              <span className={`stg-radio ${st.theme === t ? 'on' : ''}`}>{st.theme === t && <Check size={12} strokeWidth={3.4} />}</span>
-            </button>
-          ))}
-        </div>
-        <Row title="Automatic" toggle={{ value: st.themeAuto, onChange: (v) => { st.set({ themeAuto: v }); if (v) { const h = new Date().getHours(); st.set({ theme: h >= 19 || h < 7 ? 'dark' : 'light' }) } } }} />
-        {st.themeAuto && <Row title="Options" detail="Light Until Sunset" />}
-      </List>
-      <List>
-        <Go icon={<Ico c="#5ac8fa" i={Layers} />} to="display/glass" title={<span className="row gap6">Liquid Glass</span>} detail={st.glassTint < 0.2 ? 'Clear' : st.glassTint > 0.75 ? 'Tinted' : 'Custom'} />
-        <Push icon={<Ico c="#ff9500" i={Palette} />} title="Accent Color" detail={<span className="stg-dot" style={{ background: ACCENTS.find((a) => a.id === st.accent)?.color }} />} page={() => <AccentPage />} />
+    <HeroPage title="Display & Brightness" icon={<Ico c="#007aff" i={Sun} size={60} />} blurb="Adjust brightness, True Tone, Night Shift and text size.">
+      <List footer="Light and Dark appearance, Liquid Glass and accent color now live in Settings › Appearance.">
+        <Go icon={<Ico c="#1c1c1e" i={Contrast} />} to="appearance" title="Appearance" detail={st.theme === 'dark' ? 'Dark' : 'Light'} />
       </List>
       <List header="Text">
         <Go to="accessibility/textsize" title="Text Size" detail={`${Math.round(st.textScale * 100)}%`} />
@@ -78,6 +64,36 @@ function DisplayPage() {
       </List>
       <List header="Display Zoom" footer="Choose a view for iPhone. Larger Text shows larger controls. Default shows more content.">
         <div className="stg-pad"><Segmented options={['Default', 'Larger Text'] as const} value={zoom} onChange={(v) => { setZoom(v); os().set({ textScale: v === 'Default' ? 1 : 1.12 }) }} /></div>
+      </List>
+    </HeroPage>
+  )
+}
+
+// ------------------------------------------------------------------ Appearance (iOS 27 top-level)
+function AppearancePage() {
+  const st = useOS()
+  const glassLabel = Math.abs(st.glassTint - 0.5) < 0.03 ? 'Default' : st.glassTint < 0.5 ? 'More Clear' : 'More Tinted'
+  return (
+    <HeroPage title="Appearance" icon={<Ico c="#1c1c1e" i={Contrast} size={60} />} blurb="Choose Light or Dark Mode, adjust how clear or tinted Liquid Glass looks, and pick an accent color.">
+      <List header="Appearance">
+        <div className="stg-appearance">
+          {(['light', 'dark'] as const).map((t) => (
+            <button key={t} className="stg-appearance-opt" onClick={() => st.set({ theme: t })} aria-pressed={st.theme === t}>
+              <MiniPhone dark={t === 'dark'} wallpaper={st.wallpaper} />
+              <span>{t === 'light' ? 'Light' : 'Dark'}</span>
+              <span className={`stg-radio ${st.theme === t ? 'on' : ''}`}>{st.theme === t && <Check size={12} strokeWidth={3.4} />}</span>
+            </button>
+          ))}
+        </div>
+        <Row title="Automatic" toggle={{ value: st.themeAuto, onChange: (v) => { st.set({ themeAuto: v }); if (v) { const h = new Date().getHours(); st.set({ theme: h >= 19 || h < 7 ? 'dark' : 'light' }) } } }} />
+        {st.themeAuto && <Row title="Options" detail="Light Until Sunset" />}
+      </List>
+      <List>
+        <Go icon={<Ico c="#5ac8fa" i={Layers} />} to="appearance/glass" title="Liquid Glass" detail={glassLabel} />
+        <Push icon={<Ico c="#ff9500" i={Palette} />} title="Accent Color" detail={<span className="stg-dot" style={{ background: ACCENTS.find((a) => a.id === st.accent)?.color }} />} page={() => <AccentPage />} />
+      </List>
+      <List>
+        <Go to="homescreen" title="Home Screen Icon Style" detail={st.iconStyle[0].toUpperCase() + st.iconStyle.slice(1)} />
       </List>
     </HeroPage>
   )
@@ -104,10 +120,9 @@ function AccentPage() {
 // ------------------------------------------------------------------ Liquid Glass (iOS 27)
 const PREVIEW_APPS: AppId[] = ['messages', 'photos', 'camera', 'weather', 'maps', 'notes', 'music', 'settings']
 const GLASS_PRESETS = [
-  { label: 'Clear', v: 0 },
-  { label: 'Balanced', v: 0.35 },
-  { label: 'Frosted', v: 0.65 },
-  { label: 'Tinted', v: 1 },
+  { label: 'Clearest', v: 0 },
+  { label: 'Default', v: 0.5 },
+  { label: 'Most Tinted', v: 1 },
 ]
 
 export function GlassPreview({ compact }: { compact?: boolean }) {
@@ -142,20 +157,23 @@ function GlassPage() {
   const tint = useOS((s) => s.glassTint)
   const rt = useOS((s) => s.reduceTransparency)
   const ic = useOS((s) => s.increaseContrast)
-  const label = tint < 0.12 ? 'Clear' : tint > 0.88 ? 'Tinted' : `${Math.round(tint * 100)}% Tint`
+  const label = Math.abs(tint - 0.5) < 0.03 ? 'Default' : tint < 0.5 ? `More Clear · ${Math.round(tint * 100)}%` : `More Tinted · ${Math.round(tint * 100)}%`
   return (
     <Sub title="Liquid Glass">
       <div className="stg-glass-wrap">
         <GlassPreview />
       </div>
-      <List header={<span className="row gap6">Appearance <New27 /></span>} footer="Clear lets more of your wallpaper and content shine through. Tinted adds opacity and contrast to buttons, bars, notifications and the dock. Changes apply everywhere instantly.">
+      <List header={<span className="row gap6">Appearance <New27 /></span>} footer="The midpoint is the default look. More Clear lets more of your wallpaper and content shine through. Tinted adds opacity and contrast to buttons, bars, notifications and the dock. Changes apply everywhere instantly.">
         <div className="stg-glass-slider">
           <div className="row" style={{ justifyContent: 'space-between' }}>
-            <span className="t-subhead secondary">Clear</span>
+            <span className="t-subhead secondary">More Clear</span>
             <span className="t-subhead bold">{label}</span>
-            <span className="t-subhead secondary">Tinted</span>
+            <span className="t-subhead secondary">More Tinted</span>
           </div>
-          <Slider value={tint} onChange={(v) => os().set({ glassTint: v })} label="Liquid Glass tint" left={<Droplets size={18} />} right={<Layers size={18} />} />
+          <div className="stg-glass-track">
+            <span className="stg-glass-tick" aria-hidden />
+            <Slider value={tint} onChange={(v) => os().set({ glassTint: Math.abs(v - 0.5) < 0.025 ? 0.5 : v })} label="Liquid Glass: More Clear to More Tinted" left={<Droplets size={18} />} right={<Layers size={18} />} />
+          </div>
           <div className="row gap8 stg-chips" style={{ justifyContent: 'center' }}>
             {GLASS_PRESETS.map((p) => <Chip key={p.label} active={Math.abs(tint - p.v) < 0.02} onClick={() => os().set({ glassTint: p.v })}>{p.label}</Chip>)}
           </div>
@@ -491,8 +509,11 @@ function ActionButtonPage() {
 export function registerDisplay() {
   Object.assign(ROUTES, {
     display: { title: 'Display & Brightness', el: () => <DisplayPage />, keywords: 'display brightness dark mode light appearance text size bold true tone night shift auto-lock accent' },
-    'display/glass': { title: 'Liquid Glass', el: () => <GlassPage />, keywords: 'liquid glass transparency tint clear tinted translucency', parent: 'display' },
-    'display/accent': { title: 'Accent Color', el: () => <AccentPage />, keywords: 'accent color tint', parent: 'display' },
+    appearance: { title: 'Appearance', el: () => <AppearancePage />, keywords: 'appearance light dark mode automatic liquid glass accent color' },
+    'appearance/glass': { title: 'Liquid Glass', el: () => <GlassPage />, keywords: 'liquid glass transparency tint more clear more tinted translucency', parent: 'appearance' },
+    'display/glass': { title: 'Liquid Glass', el: () => <GlassPage />, keywords: 'liquid glass', parent: 'appearance' },
+    'display/accent': { title: 'Accent Color', el: () => <AccentPage />, keywords: 'accent color tint', parent: 'appearance' },
+    'appearance/accent': { title: 'Accent Color', el: () => <AccentPage />, keywords: 'accent color tint', parent: 'appearance' },
     homescreen: { title: 'Home Screen & App Library', el: () => <HomeScreenPage />, keywords: 'home screen app library icons dark tinted clear large badges' },
     wallpaper: { title: 'Wallpaper', el: () => <WallpaperPage />, keywords: 'wallpaper background lock screen home screen profiles clock style image playground' },
     standby: { title: 'StandBy', el: () => <StandByPage />, keywords: 'standby night mode always on charging clock' },

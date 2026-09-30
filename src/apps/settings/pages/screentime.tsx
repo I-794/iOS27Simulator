@@ -4,7 +4,7 @@ import { List, Row } from '../../../ui/list'
 import { Button, Segmented, Avatar, Switch } from '../../../ui/controls'
 import { Sheet, showAlert } from '../../../ui/overlay'
 import { useNav } from '../../../ui/nav'
-import { useOS, uid } from '../../../os/store'
+import { useOS, uid, DOWNTIME_ALLOWED } from '../../../os/store'
 import { SCREEN_TIME_USAGE } from '../../../os/data/world'
 import { AppIconArt, ICONS } from '../../../icons/AppIconArt'
 import type { AppId, ScreenTimeConfig } from '../../../os/types'
@@ -64,7 +64,7 @@ function ScreenTimePage() {
       <List header="Limit Usage">
         <Go icon={<Ico c="#5856d6" i={Moon} fill />} to="screentime/downtime" title="Downtime" detail={stc.downtime ? 'On' : 'Off'} />
         <Go icon={<Ico c="#ff9500" i={Hourglass} />} to="screentime/limits" title="App Limits" detail={Object.keys(prefs.appLimits).length} />
-        <Go icon={<Ico c="#34c759" i={CheckCircle2} />} to="screentime/always" title="Always Allowed" detail={prefs.alwaysAllowed.length} />
+        <Go icon={<Ico c="#34c759" i={CheckCircle2} />} to="screentime/always" title="Always Allowed" detail={DOWNTIME_ALLOWED.length} />
         <Row icon={<Ico c="#007aff" i={Ruler} />} title="Screen Distance" toggle={{ value: prefs.screenDistance, onChange: (v) => prefs.setP({ screenDistance: v }) }} />
       </List>
       <List header="Communication">
@@ -178,16 +178,18 @@ function LimitsPage() {
 }
 
 function AlwaysAllowedPage() {
-  const allowed = usePrefs((s) => s.alwaysAllowed)
-  const all = (Object.keys(ICONS) as AppId[]).filter((a) => a !== 'settings').sort((a, b) => ICONS[a].name.localeCompare(ICONS[b].name))
-  const toggle = (a: string) => usePrefs.getState().setP({ alwaysAllowed: allowed.includes(a) ? allowed.filter((x) => x !== a) : [...allowed, a] })
+  const downtime = useOS((s) => s.screenTime.downtime)
+  const all = (Object.keys(ICONS) as AppId[]).filter((a) => !DOWNTIME_ALLOWED.includes(a)).sort((a, b) => ICONS[a].name.localeCompare(ICONS[b].name))
   return (
     <Sub title="Always Allowed">
-      <List header="Allowed Apps" footer="These apps are available during downtime and ignore App Limits.">
-        {allowed.map((a) => <Row key={a} icon={<button className="stg-cc-btn remove" aria-label={`Remove ${ICONS[a as AppId]?.name}`} onClick={() => toggle(a)}><Minus size={14} strokeWidth={3.4} /></button>} title={<span className="row gap8"><AppIconArt app={a as AppId} size={28} />{ICONS[a as AppId]?.name}</span>} />)}
+      <List header="Allowed Apps" footer={`These apps stay available during Downtime${downtime ? ' (Downtime is on now — other apps show an hourglass)' : ''}. Phone, Messages and FaceTime also let you reach emergency contacts.`}>
+        {DOWNTIME_ALLOWED.map((a) => <Row key={a} icon={<AppIconArt app={a} size={30} />} title={ICONS[a].name} trailing={<Check size={18} className="stg-check" />} />)}
       </List>
-      <List header="Choose Apps">
-        {all.filter((a) => !allowed.includes(a)).map((a) => <Row key={a} icon={<span className="stg-cc-btn add" aria-hidden><Plus size={14} strokeWidth={3.4} /></span>} label={`Allow ${ICONS[a].name}`} title={<span className="row gap8"><AppIconArt app={a} size={28} />{ICONS[a].name}</span>} onClick={() => toggle(a)} />)}
+      <List header="Limited During Downtime">
+        {all.map((a) => <Row key={a} icon={<AppIconArt app={a} size={30} />} title={ICONS[a].name} detail={downtime ? 'Limited' : undefined} compact />)}
+      </List>
+      <List>
+        <Row tint title={downtime ? 'Turn Off Downtime' : 'Turn On Downtime Now'} onClick={() => setST({ downtime: !downtime })} />
       </List>
     </Sub>
   )

@@ -1,24 +1,27 @@
-# Agent D handoff — Settings + Passwords
+# Agent D handoff — Settings + Passwords (updated)
 
-## Done (src/apps/settings) — type-checks clean, no console errors on tested routes
-- `index.tsx`: root list (search field w/ ranked results + breadcrumbs, Apple Account header, AirPods row, all groups), deep-link routing via `useAppRoute('settings')` (pushes parent chain, e.g. `display/glass` → Display › Liquid Glass).
-- `common.tsx`: route registry `ROUTES`, `Go/Push/XRow/HeroPage/Sub/ChoicePage/Ico/New27`, persisted Settings-only prefs store `usePrefs` (`ios27-settings`), store helpers (setA11y/setSiri/setST/...).
-- `pages/connectivity.tsx`: Wi‑Fi (join sheet, password never stored, network info/forget), Bluetooth (devices connect → airpods/games store, iOS 27 power mgmt), Cellular (Connectivity Assist + live Wi‑Fi-quality handoff demo → net.wifiQuality/activePath, per-app cellular data), Hotspot, VPN.
-- `pages/account.tsx`: Apple Account, Sign-In & Security, Account Recovery (recovery contacts, iOS 27 recovery codes), Recovery Key, Quick Start w/ recovery contact demo, iCloud (+storage bar), iCloud Photos priority sync demo, Family.
-- `pages/alerts.tsx`: Notifications (per-app → store.permissions[app].notifications), Sounds & Haptics (ringer + independent alarm volume, Test buttons via playAlert, ringtone/text tone pickers w/ previews in `tones.ts`), Focus (modes, schedules, focusAppFilter).
-- `pages/general.tsx`: General, About, Software Update, Storage, AirDrop, Keyboards (multilingual demo + grammar via proofread, Indigenous keyboards), Language & Region (English variants), Date & Time (h24), iPhone Handoff demo, Feature Availability (expandable), Game Controllers, Transfer or Reset (resetAll w/ confirm).
-- `pages/accessibility.tsx`: VoiceOver (rich image descriptions + ask-about-image via answerAbout), Zoom, Display & Text Size, Larger Text, Motion, Accessibility Reader demo, Voice Control (names/numbers overlay, rename, commands), Assistive Access wizard, Guided Access speed demo, Touch Accommodations wizard, Hearing Devices pairing, Subtitles & Captioning (captionTranslate).
-- `pages/display.tsx`: Display & Brightness, Accent, Liquid Glass (live preview + slider/presets → glassTint), Home Screen (icon styles/tint/large), Wallpaper (pair preview, gallery incl. Photos/Playground, Lock Screen profiles, clock style), StandBy, Control Center customize (store.controls), Action Button carousel.
-- `pages/system.tsx`: Battery (insights, 24h/10d charts, per-app, charge limit), Privacy & Security (+ Safety Check), Emergency SOS, Face ID, Camera/Photos/Safari/Messages/Music/Wallet settings, Apps list + generic app page, Search.
-- `pages/siri.tsx`: Apple Intelligence & Siri, Voice page (pace/expressiveness sliders, speechSynthesis preview + waveform fallback).
-- `pages/airpods.tsx`: battery rings, noise control, Custom EQ (draggable curve + sliders + presets → store.eq, Play sample), heart rate, hearing health, Find My.
-- `pages/screentime.tsx`: dashboard/activity, Downtime, App Limits, Always Allowed, Communication Safety demo, Family child account for Mia (child-mode switch, setup wizard w/ app grid → allowedApps, Ask to Browse approve/deny, Time Allowances, Schedules add/edit).
+## Settings (src/apps/settings) — complete, type-checks clean
+- Root list, search (page + row-level entries in `searchIndex.ts`), deep links via `useAppRoute('settings')` that push the parent chain.
+- New iOS 27 **Appearance** top-level page (`appearance`): Light/Dark cards, Automatic, Liquid Glass, Accent Color, icon-style link.
+  **Liquid Glass** at `appearance/glass` (alias `display/glass`, parent = appearance): live preview + slider labelled
+  "More Clear" / "More Tinted", midpoint tick (snaps to 0.5 = Default), presets Clearest/Default/Most Tinted.
+  Display & Brightness now only brightness/True Tone/Night Shift/text/auto-lock (+ link to Appearance).
+- Apple Intelligence & Siri: new **Siri AI (Beta)** waitlist row (none → "Joined waitlist · You'll be notified" → notification after ~8 s → "Available"; EU regions show not-available; English only). State in `usePrefs.siriAiWaitlist`.
+- Always Allowed page now mirrors `DOWNTIME_ALLOWED` from the store (read-only) + Downtime toggle.
+- Everything else as in the original handoff (connectivity, account/recovery, alerts, general, accessibility, display, system, siri voice, AirPods EQ, Screen Time/Family/child mode).
 
-## NOT done
-- **Passwords app (src/apps/passwords) is still the placeholder.** Next: categories grid (All/Passkeys/Codes/Wi‑Fi/Security/Deleted from PASSWORDS in world.ts), item detail w/ masked "••••••••" → reveal "demo-Passw0rd!", Security recommendations + iOS 27 upgrade flow (animated, push id into store.passwordsFixed), account recovery section, `useAppRoute('passwords', 'site/<site>')`, `passwords.css` with `.pw-` prefix.
-- Not yet visually verified: dark mode, landscape, most sub-pages beyond glass/wifi/cellular/sounds/airpods/screentime/family/voiceover (they rendered without console errors).
+## Passwords (src/apps/passwords) — complete
+- Home: search, 6 category tiles (All/Passkeys/Codes/Wi‑Fi/Security/Deleted) with live counts, Family shared group, Account Recovery, Lock Screen help, "demo data" note, + New Password (site + user only; password is generated, never typed).
+- Detail: favicon tile, warnings (compromised/reused/weak) with explanations, masked `••••••••` → simulated Face ID → reveal fake `demo-…` value, passkey row, rotating fake TOTP code with countdown ring, website link (Safari), Wi‑Fi QR (fake), delete → Deleted (30-day recover).
+- Security: high-priority vs other recommendations, iOS 27 Automatic Upgrades ("Upgrade All to Passkeys" batch), per-item "Upgrade to Passkey"/"Change Password" → animated 5-step sheet → pushes id into `store.passwordsFixed` (Lock Screen help prompt disappears once anything is fixed), Recently Fixed, Reset Security Demo.
+- Routes: `site/<site>` (fuzzy match), `security`, `recovery`. Local persisted store `ios27-passwords` (deleted, upgrades, added).
 
-## Shared-file suggestions (not applied)
-- `store.notify`: skip banner when `permissions[app]?.notifications === false` (Settings writes it).
-- `pressAction()` 'shortcut': run the chosen shortcut (`usePrefs` key `actionShortcut` lives in localStorage `ios27-settings`), e.g. launch('shortcuts',{route:`run/${id}`}).
-- `isAppAllowed`: honour `screenTime.downtime`.
+## Verified (screenshots, no console errors)
+- Liquid Glass tint 0 vs 1 visibly changes the real banner and dock opacity (effect is moderate — mapping lives in tokens.css).
+- Child mode greys Home Screen icons with hourglass; launching a blocked app shows the "App Limited" alert.
+- Settings + Passwords in dark mode and landscape (landscape content capped at 640px width).
+
+## Known issues / ideas
+- Relaunching Passwords from Home keeps its nav stack (expected iOS behaviour).
+- Settings-only toggles (e.g. Keyboard Feedback, StandBy) only persist in `ios27-settings`; nothing else reads them.
+- Siri voice preview picks a browser voice by index; accent may not match.

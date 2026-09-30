@@ -21,6 +21,7 @@ function SiriPage() {
       <List>
         <Row icon={<span className="stg-ai-ico"><AISparkle size={18} color="#fff" /></span>} title="Apple Intelligence" toggle={{ value: ai, onChange: (v) => { setAi(v); os().showToast(v ? 'Apple Intelligence on' : 'Apple Intelligence off (demo)') } }} />
       </List>
+      <SiriAiRow />
       <List header="Siri Requests">
         <Push icon={<Ico c="#1c1c1e" i={Mic} />} title="Talk to Siri" detail={s.heySiri ? (phrase === 'Hey Siri' ? '“Hey Siri”' : '“Siri” or “Hey Siri”') : 'Off'} page={() => <TalkPage />} />
         <Row icon={<Ico c="#1c1c1e" i={AudioLines} />} title="Press Side Button for Siri" toggle={{ value: s.sideButton, onChange: (v) => setSiri({ sideButton: v }) }} />
@@ -64,6 +65,48 @@ function SiriPage() {
         />
       </List>
     </HeroPage>
+  )
+}
+
+/** Released Siri AI requires joining a beta waitlist (English only, not in the EU). */
+function SiriAiRow() {
+  const state = usePrefs((x) => x.siriAiWaitlist)
+  const region = useOS((x) => x.language.region)
+  const eu = ['Germany', 'France', 'Ireland', 'Italy', 'Spain', 'Netherlands'].includes(region)
+  const join = () => {
+    if (eu) return showAlert({ title: 'Siri AI Not Available', message: `Siri AI (Beta) isn’t available in ${region} (EU) yet.`, actions: [{ label: 'OK' }] })
+    if (state === 'available') return os().launch('siri')
+    if (state === 'joined') return os().showToast('You’re on the waitlist — we’ll notify you')
+    showAlert({
+      title: 'Join the Siri AI (Beta) Waitlist?',
+      message: 'Siri AI is available in English only. You’ll get a notification when it’s ready on this iPhone.',
+      actions: [
+        { label: 'Not Now', style: 'cancel' },
+        {
+          label: 'Join Waitlist',
+          onPress: () => {
+            usePrefs.getState().setP({ siriAiWaitlist: 'joined' })
+            window.setTimeout(() => {
+              if (usePrefs.getState().siriAiWaitlist !== 'joined') return
+              usePrefs.getState().setP({ siriAiWaitlist: 'available' })
+              os().notify({ app: 'settings', title: 'Siri AI (Beta) Is Ready', body: 'You’re off the waitlist. Siri AI is now available on this iPhone.', route: 'siri' })
+            }, 8000)
+          },
+        },
+      ],
+    })
+  }
+  return (
+    <List footer={<>Siri AI (Beta) requires joining a waitlist. English only; not available in the EU. {state !== 'none' && <button className="stg-link" onClick={() => usePrefs.getState().setP({ siriAiWaitlist: 'none' })}>Reset demo</button>}</>}>
+      <Row
+        icon={<span className="stg-ai-ico"><AISparkle size={18} color="#fff" /></span>}
+        title={<span className="row gap6">Siri AI <span className="stg-new">Beta</span></span>}
+        subtitle={eu ? 'Not available in your region' : state === 'none' ? 'Join the waitlist' : state === 'joined' ? 'Joined waitlist · You’ll be notified' : 'Available'}
+        detail={state === 'available' ? 'On' : state === 'joined' ? 'Waiting' : undefined}
+        chevron
+        onClick={join}
+      />
+    </List>
   )
 }
 

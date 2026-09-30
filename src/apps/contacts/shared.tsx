@@ -19,6 +19,14 @@ export function listName(id: string): string {
   return fullName(c)
 }
 
+/** Name shown on call screens: family nicknames ("Mom"), otherwise the full name. */
+export function callName(id: string): string {
+  const c = contactById(id)
+  if (!c) return id
+  if (c.nickname && ['Mom', 'Dad', 'Grandma'].includes(c.nickname)) return c.nickname
+  return fullName(c)
+}
+
 export function shortName(id: string): string {
   const c = contactById(id)
   if (!c) return id

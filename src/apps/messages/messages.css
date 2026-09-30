@@ -675,3 +675,5 @@
 .msg-new-suggest button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 16px; text-align: left; }
 .msg-new-suggest button:active { background: var(--fill-tertiary); }
 .msg-new-compose { margin-top: auto; position: sticky; bottom: 0; padding: 10px 12px calc(var(--kb-height, 0px) + var(--safe-bottom) + 6px); }
+
+.msg-head-svc { font: 700 9px/1 var(--font-text); letter-spacing: 0.4px; color: #fff; background: var(--msg-green); padding: 3px 5px; border-radius: 5px; margin-left: 3px; }

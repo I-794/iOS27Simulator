@@ -21,7 +21,7 @@ import { DrawingSheet } from './DrawingSheet'
 import { ConvDetails } from './ConvDetails'
 import { suggestionsFor, type Suggestion } from './detect'
 import { useMsgLocal, msgLocal } from './msgStore'
-import { convTitle, isBusinessConv, sendMsg, toggleReaction } from './engine'
+import { convTitle, convService, sendMsg, toggleReaction } from './engine'
 import { shortName } from '../contacts/shared'
 
 const TAPBACKS = ['❤️', '👍', '👎', '😂', '‼️', '❓']
@@ -160,7 +160,8 @@ export function Transcript({ convId, highlight }: { convId: string; highlight?: 
 
   const title = conv ? convTitle(conv) : ''
   const group = (conv?.participants.length ?? 0) > 1
-  const sms = conv ? isBusinessConv(conv) : false
+  const service = conv ? convService(conv) : 'iMessage'
+  const sms = service !== 'iMessage'
   const online = !net.airplane && (net.wifi || net.cellular)
   useOnscreen('messages', `Conversation with ${title}`, { type: 'conversation', convId, name: title })
 
@@ -357,6 +358,7 @@ export function Transcript({ convId, highlight }: { convId: string; highlight?: 
           </span>
           <span className="msg-head-name glass">
             {title}
+            {service !== 'iMessage' && <span className="msg-head-svc">{service}</span>}
             <ChevronRight size={13} strokeWidth={3} className="tertiary" />
           </span>
         </button>
@@ -384,7 +386,7 @@ export function Transcript({ convId, highlight }: { convId: string; highlight?: 
         }}
       >
         <div className="msg-thread-top">
-          {sms ? <><b>Text Message</b> · SMS</> : <><b>iMessage</b> · Encrypted</>}
+          {sms ? <><b>Text Message</b> · {service}{service === 'RCS' ? ' · Encrypted' : ''}</> : <><b>iMessage</b> · Encrypted</>}
         </div>
         {msgs.map((m, i) => {
           const prev = msgs[i - 1]
@@ -433,6 +435,7 @@ export function Transcript({ convId, highlight }: { convId: string; highlight?: 
           editing={editing}
           onEditDone={() => setEditing(null)}
           sms={sms}
+          service={service}
           replyTo={replyTo}
           onCancelReply={() => setReplyTo(null)}
           fieldRef={fieldRef}

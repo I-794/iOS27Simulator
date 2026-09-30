@@ -227,7 +227,7 @@ function DisplayTextPage() {
         </div>
       </div>
       <List>
-        <Go to="display/glass" title="Liquid Glass" />
+        <Go to="appearance/glass" title="Liquid Glass" />
       </List>
     </Sub>
   )
@@ -425,7 +425,6 @@ function VoiceControlPage() {
               {overlay !== 'None' && <span className="stg-vc-tag">{overlay === 'Numbers' ? 4 : name('send')}</span>}
             </button>
           </div>
-          {!on && <div className="stg-vc-offnote">Turn on Voice Control to use commands</div>}
         </div>
         <div className="stg-ask" style={{ margin: '0 14px 12px' }}>
           <Mic size={16} className="secondary" />

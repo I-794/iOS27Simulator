@@ -8,6 +8,7 @@ import type {
 import { CONVERSATIONS, MAILS } from './data/comms'
 import { EVENTS, REMINDERS, NOTES, JOURNAL, ALARMS } from './data/life'
 import { PHOTOS, SHARED_ALBUMS } from './data/photos'
+import { contactName } from './data/people'
 import { ACCESSORIES, SAFARI_TABS, SHORTCUTS, DEFAULT_SCREEN_TIME, WALLET_CARDS } from './data/world'
 
 export const uid = (p = 'id') => `${p}-${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36).slice(-3)}`
@@ -501,7 +502,7 @@ export const useOS = create<OSState>()(
         const conv = st.conversations.find((c) => c.id === convId)
         set({ conversations: st.conversations.map((c) => (c.id === convId ? { ...c, messages: [...c.messages, m], unread: (c.unread ?? 0) + (st.openApp === 'messages' ? 0 : 1) } : c)) })
         if (conv) {
-          st.notify({ app: 'messages', title: conv.name ?? m.from, subtitle: conv.name ? m.from : undefined, body: m.text ?? 'Attachment', thread: convId, route: `conv/${convId}` })
+          st.notify({ app: 'messages', title: conv.name ?? contactName(m.from, 'full'), subtitle: conv.name ? contactName(m.from) : undefined, body: m.text ?? 'Attachment', thread: convId, route: `conv/${convId}` })
         }
       },
       patchMessage: (convId, msgId, patch) =>

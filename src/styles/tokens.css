@@ -70,14 +70,14 @@
   --glass-tint: 0.35; /* 0 = Clear, 1 = Tinted — set by Settings */
   --glass-base-rgb: 255 255 255;
   --glass-ink-rgb: 0 0 0;
-  --glass-clear: rgb(var(--glass-base-rgb) / calc(0.04 + var(--glass-tint) * 0.36));
-  --glass-light: rgb(var(--glass-base-rgb) / calc(0.14 + var(--glass-tint) * 0.5));
-  --glass-medium: rgb(var(--glass-base-rgb) / calc(0.3 + var(--glass-tint) * 0.5));
-  --glass-heavy: rgb(var(--glass-base-rgb) / calc(0.55 + var(--glass-tint) * 0.38));
+  --glass-clear: rgb(var(--glass-base-rgb) / calc(0.01 + var(--glass-tint) * 0.5));
+  --glass-light: rgb(var(--glass-base-rgb) / calc(0.04 + var(--glass-tint) * 0.72));
+  --glass-medium: rgb(var(--glass-base-rgb) / calc(0.1 + var(--glass-tint) * 0.8));
+  --glass-heavy: rgb(var(--glass-base-rgb) / calc(0.32 + var(--glass-tint) * 0.64));
   --glass-tint-color: rgb(var(--glass-base-rgb) / calc(var(--glass-tint) * 0.35));
-  --glass-blur-clear: calc(3px + var(--glass-tint) * 10px);
-  --glass-blur: calc(8px + var(--glass-tint) * 14px);
-  --glass-blur-heavy: calc(18px + var(--glass-tint) * 16px);
+  --glass-blur-clear: calc(1px + var(--glass-tint) * 16px);
+  --glass-blur: calc(3px + var(--glass-tint) * 22px);
+  --glass-blur-heavy: calc(12px + var(--glass-tint) * 24px);
   --glass-saturate: calc(1.9 - var(--glass-tint) * 0.5);
   --glass-border: rgb(255 255 255 / calc(0.5 - var(--glass-tint) * 0.2));
   --glass-highlight: rgb(255 255 255 / 0.75);
@@ -139,10 +139,10 @@
 
   --glass-base-rgb: 30 30 32;
   --glass-ink-rgb: 255 255 255;
-  --glass-clear: rgb(var(--glass-base-rgb) / calc(0.08 + var(--glass-tint) * 0.4));
-  --glass-light: rgb(var(--glass-base-rgb) / calc(0.2 + var(--glass-tint) * 0.5));
-  --glass-medium: rgb(var(--glass-base-rgb) / calc(0.36 + var(--glass-tint) * 0.46));
-  --glass-heavy: rgb(var(--glass-base-rgb) / calc(0.6 + var(--glass-tint) * 0.34));
+  --glass-clear: rgb(var(--glass-base-rgb) / calc(0.04 + var(--glass-tint) * 0.55));
+  --glass-light: rgb(var(--glass-base-rgb) / calc(0.1 + var(--glass-tint) * 0.7));
+  --glass-medium: rgb(var(--glass-base-rgb) / calc(0.18 + var(--glass-tint) * 0.72));
+  --glass-heavy: rgb(var(--glass-base-rgb) / calc(0.42 + var(--glass-tint) * 0.54));
   --glass-border: rgb(255 255 255 / calc(0.2 - var(--glass-tint) * 0.08));
   --glass-highlight: rgb(255 255 255 / 0.32);
   --glass-shadow: 0 8px 32px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.3);

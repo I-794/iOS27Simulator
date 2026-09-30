@@ -31,6 +31,14 @@ export function convShortTitle(c: Conversation): string {
   return c.participants.map((p) => shortName(p)).join(' & ')
 }
 
+/** Android friends use RCS (green bubbles); businesses text over SMS. */
+export const RCS_CONTACTS = ['nora']
+export function convService(c: Conversation): 'iMessage' | 'SMS' | 'RCS' {
+  if (isBusinessConv(c)) return 'SMS'
+  if (c.participants.length === 1 && RCS_CONTACTS.includes(c.participants[0])) return 'RCS'
+  return 'iMessage'
+}
+
 export function isBusinessConv(c: Conversation) {
   return c.participants.length === 1 && !!contactById(c.participants[0])?.isBusiness
 }
@@ -281,6 +289,7 @@ function replyText(conv: Conversation, from: string, m: Message): string | null 
     if (/dinner|home/.test(t) || fam) return 'Dinner’s at 6! Don’t be late ❤️'
     return 'I think around 6? I’ll double check'
   }
+  if (/^(which|what)\b/.test(t)) return fam ? 'I’ll tell you when you get home 🙂' : pick(['not sure, I’ll check tomorrow', 'lemme look 👀', 'the blue ones I think?'])
   if (/\bwhere\b/.test(t)) return /robot/.test(t) ? 'Room 114 like always' : fam ? 'I’ll text you the address 🙂' : 'library? or brew lab'
   if (/how are you|how’s it going|how's it going|\bwyd\b|what are you doing/.test(t)) return fam ? 'Good! Just got home. How was school?' : 'nm just finished chem hw 😮‍💨 you?'
   if (/\b(want to|wanna|down to|should we|let’s|let's)\b/.test(t)) return fam ? 'Sounds lovely!' : 'yes!! 🙌'
@@ -318,6 +327,7 @@ function maybeReply(conv: Conversation, m: Message) {
         const st = S()
         const open = st.openApp === 'messages' && msgLocal().openConv === conv.id
         st.receiveMessage(conv.id, { from, text })
+        fixNotificationTitle(conv)
         if (st.openApp === 'messages' && !open) {
           useOS.setState({ conversations: S().conversations.map((c) => (c.id === conv.id ? { ...c, unread: (c.unread ?? 0) + 1 } : c)) })
         }
@@ -327,6 +337,16 @@ function maybeReply(conv: Conversation, m: Message) {
   )
 }
 const pendingReplies = new Map<string, number>()
+
+/** receiveMessage titles notifications with the raw sender id for 1:1 chats — use the contact's name instead. */
+function fixNotificationTitle(conv: Conversation) {
+  const st = S()
+  const n = st.notifications[0]
+  if (!n || n.thread !== conv.id || conv.name) return
+  const title = convTitle(conv)
+  const fixed = { ...n, title, subtitle: undefined }
+  useOS.setState({ notifications: [fixed, ...st.notifications.slice(1)], banner: st.banner?.id === n.id ? fixed : st.banner })
+}
 
 function setTyping(convId: string, who: string | undefined) {
   msgLocal().set({ typing: { ...msgLocal().typing, [convId]: who } })

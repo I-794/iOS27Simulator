@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import {
   Plane, Wifi, Bluetooth, Antenna, Link2, BatteryFull, Globe2, Settings as Gear, PersonStanding, Sun, LayoutGrid, Search as SearchIcon,
   Image as ImageIcon, SlidersHorizontal, Camera, Bell, Volume2, Moon, Hourglass, ScanFace, Hand, Wallet, AppWindow, Gamepad2,
-  Cloud, Headphones, ChevronRight, Clock3, Siren, KeyRound,
+  Cloud, Headphones, ChevronRight, Clock3, Siren, KeyRound, Contrast,
 } from 'lucide-react'
 import { NavStack, Page, useNav } from '../../ui/nav'
 import { List, Row } from '../../ui/list'
@@ -45,7 +45,7 @@ export default function SettingsApp() {
   )
 }
 
-/** The chain of routes to push for a deep link, e.g. display/glass → [display, display/glass]. */
+/** The chain of routes to push for a deep link, e.g. appearance/glass → [appearance, appearance/glass]. */
 function chainFor(route: string): string[] {
   const out: string[] = []
   let r: string | undefined = route
@@ -127,6 +127,7 @@ function RootPage() {
             <Row icon={accent('#0a84ff', PersonStanding)} title="Accessibility" chevron onClick={() => open('accessibility')} />
             <Row icon={accent('#3478f6', Hand)} title="Action Button" chevron onClick={() => open('action-button')} />
             <Row icon={<span className="stg-ai-ico"><AISparkle size={20} color="#fff" /></span>} title="Apple Intelligence & Siri" chevron onClick={() => open('siri')} />
+            <Row icon={accent('#1c1c1e', Contrast)} title="Appearance" detail={st.theme === 'dark' ? 'Dark' : 'Light'} chevron onClick={() => open('appearance')} />
             <Row icon={accent('#8e8e93', Camera)} title="Camera" chevron onClick={() => open('camera')} />
             <Row icon={accent('#8e8e93', SlidersHorizontal)} title="Control Center" chevron onClick={() => open('controls')} />
             <Row icon={accent('#007aff', Sun)} title="Display & Brightness" chevron onClick={() => open('display')} />
