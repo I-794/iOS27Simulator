@@ -308,8 +308,9 @@ function Sentence({ a, elseIf }: { a: ShortcutAction; elseIf?: number }) {
 function Token({ value, pdef, onClick, big }: { value: string; pdef: ParamDef; onClick: (el: HTMLElement) => void; big?: boolean }) {
   const parts = pdef.type === 'text' || pdef.key === 'input' ? textParts(pdef.key === 'input' && !/^\[/.test(value) ? `[${value}]` : value) : [{ text: value }]
   const empty = !value
+  const bare = !big && parts.length === 1 && !!parts[0].variable
   return (
-    <button className={`shc-token ${big ? 'big' : ''} ${empty ? 'empty' : ''}`} onClick={(e) => { e.stopPropagation(); onClick(e.currentTarget) }}>
+    <button className={`shc-token ${big ? 'big' : ''} ${empty ? 'empty' : ''} ${bare ? 'bare' : ''}`} onClick={(e) => { e.stopPropagation(); onClick(e.currentTarget) }}>
       {empty ? cap(pdef.label ?? pdef.key) : parts.map((p, i) =>
         p.variable ? (
           <span key={i} className="shc-var" style={{ ['--vc' as string]: VAR_COLOR[p.variable] ?? '#ff9500' }}><VarIcon size={11} strokeWidth={2.6} />{p.variable}</span>

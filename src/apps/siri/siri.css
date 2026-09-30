@@ -132,3 +132,7 @@
 .screen.landscape .siriapp-sugg { grid-template-columns: repeat(4, 1fr); }
 .screen.landscape .siriapp-hero { padding-top: 8px; }
 .screen.landscape .siriapp-greet { margin-top: 18px; }
+
+/* landscape: keep custom sections clear of the sensor housing */
+.screen.landscape .siriapp .page-scroll { padding-left: var(--safe-left); padding-right: var(--safe-right); }
+.screen.landscape .siriapp .page-scroll .large-title, .screen.landscape .siriapp .page-scroll .large-subtitle { padding-left: 16px; }

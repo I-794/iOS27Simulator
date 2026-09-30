@@ -127,3 +127,7 @@
 .pg-gm-field input { flex: 1; border: 0; outline: 0; background: transparent; font: var(--t-body); color: var(--label-primary); }
 .pg-gm-sugg { display: flex; flex-wrap: wrap; gap: 6px; }
 .pg-gm-sugg button { height: 34px; padding: 0 12px; border-radius: 17px; background: var(--fill-tertiary); font: 500 14px/1 var(--font-text); color: var(--label-primary); }
+
+/* landscape: keep custom sections clear of the sensor housing */
+.screen.landscape .pg .page-scroll { padding-left: var(--safe-left); padding-right: var(--safe-right); }
+.screen.landscape .pg .page-scroll .large-title, .screen.landscape .pg .page-scroll .large-subtitle { padding-left: 16px; }

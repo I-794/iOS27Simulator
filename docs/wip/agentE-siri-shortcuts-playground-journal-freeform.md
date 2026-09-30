@@ -34,16 +34,27 @@ No shared files were edited.
   natural-language edits (+ chips), sticker tool (tap/drag), brush tool (draw → pick what the area becomes), undo,
   transform photo (restyled Scene), daily limit (50, local store `ios27-playground`). Routes `new[/<prompt>]`, `gen/<id>`, `photo/<id>`, `genmoji`.
 
-## Not started (still placeholders)
-- Journal (`src/apps/journal`) and Freeform (`src/apps/freeform`) — spec in the original task; nothing written yet.
+### Journal (`src/apps/journal`, classes `jn-*`) — done (day 2)
+- Home: iCloud sync line (tap to sync; offline aware), streak card (current streak, week dots, tappable weekly goal),
+  insights (entries this year, words, days journaled, longest streak), AI writing prompts built from recent data
+  (last entry, Robotics Scrimmage, drumline practice, upcoming chem test, run, Biscuit photos, song, places; shuffle),
+  month-grouped timeline cards (Scene photos, attachment chips, mood, bookmark), search + filters, long-press menu, FAB.
+- Editor: prompt banner, photos (multi-select sheet), title/body autosave to store.journal, location/song/workout/audio
+  (simulated recorder)/mood, attachment allowance meter ("of 1 GB"), bookmark / change date / delete. Routes `entry/<id>`, `new`.
+### Freeform (`src/apps/freeform`, classes `ff-*`) — done (day 2)
+- Board list: search, scope chips (All/Recents/Shared/folders), folder sections with participant avatars
+  ("Robotics (Shared)"), live miniature previews (dark-adaptive), long-press Rename/Duplicate/Move/Delete, New Board.
+- Canvas: pan (drag background / trackpad), zoom (wheel/pinch around cursor, +/−/100% pill), select/move/resize,
+  sticky notes (tap selected to edit), shapes (rect/circle/triangle/star/arrow), text boxes, photos from Photos, pen with
+  ink colors, color/duplicate/bring-to-front/delete bar, undo/redo (+ ⌘Z, Delete key), shared-board presence + remote
+  cursor. Persists to store.freeform. Routes `board/<id>`, `new`.
+### Day-2 fixes
+- Shortcuts If/Otherwise If input token no longer double-outlined (bare variable pill).
+- Landscape: all five apps pad `.page-scroll` by `--safe-left/right`; Siri chat + Shortcuts editor checked in landscape+dark.
 
-## Next steps
-1. Journal: timeline (store.journal, Scene photos, attachment chips), search, editor, AI prompt cards from recent data,
-   streak widget, iCloud sync line, "Attachments up to 1 GB", insights. Prefix `jn-`.
-2. Freeform: board list (store.freeform, folders, Robotics (Shared) avatars), canvas zoom/pan, stickies, shapes, text,
-   images, pen, select/move/delete, undo. Prefix `ff-`.
-3. Polish: landscape pass on Siri chat & Shortcuts editor; the Shortcuts If input token shows a variable pill inside a
-   blue token (slightly double-wrapped).
+## Next steps (polish only)
+- Freeform: multi-select/lasso, connectors, per-board zoom persistence.
+- Journal: edit entry date with a picker; map view of places.
 
 ## Known issues / shared-file notes
 - Saving a non-photorealistic image to Photos uses `scene: 'gen:<id>'`; `Scene` (src/art/Scene.tsx) falls back to
