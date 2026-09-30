@@ -138,7 +138,7 @@ function HostPanel() {
       {btn(<LayoutGrid size={19} />, 'App Switcher (Alt+A)', () => !locked && useOS.getState().toggleOverlay('switcher'))}
       {btn(<SlidersHorizontal size={19} />, 'Control Center (Alt+C)', () => useOS.getState().toggleOverlay('cc'))}
       {btn(<Bell size={19} />, 'Notification Center (Alt+N)', () => useOS.getState().toggleOverlay('nc'))}
-      {btn(<Search size={19} />, 'Spotlight (Alt+Space)', () => !locked && useOS.getState().toggleOverlay('spotlight'))}
+      {btn(<Search size={19} />, 'Search or Ask (Alt+Space)', () => !locked && useOS.getState().toggleOverlay('spotlight'))}
       <div className="sep" />
       {btn(<Volume2 size={19} />, 'Volume up', () => volumeStep(1))}
       {btn(<Volume1 size={19} />, 'Volume down', () => volumeStep(-1))}

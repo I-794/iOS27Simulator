@@ -105,24 +105,29 @@ export function Screen({ width, height, fullscreen }: { width: number; height: n
   )
 }
 
-/** Invisible strips along the top edge: pull down on the right for Control Center, elsewhere for Notification Center. */
+/** iOS 27 top-edge gesture map: top-left pulls down Notification Center, the centre
+ *  (Dynamic Island) pulls down Search or Ask, and top-right pulls down Control Center. */
 function TopEdgeGestures() {
   const overlay = useOS((s) => s.overlay)
   const siri = useOS((s) => s.siriActive)
-  const make = (target: 'cc' | 'nc') =>
+  const make = (target: 'cc' | 'nc' | 'spotlight') =>
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useDrag({
       onMove: () => {},
       onEnd: (_dx, dy) => {
-        if (dy > 30 || Math.abs(dy) < 4) useOS.getState().setOverlay(target)
+        if (!(dy > 30 || Math.abs(dy) < 4)) return
+        const st = useOS.getState()
+        st.setOverlay(target === 'spotlight' && st.locked ? 'nc' : target)
       },
     })
   const ncDrag = make('nc')
+  const askDrag = make('spotlight')
   const ccDrag = make('cc')
-  if (overlay === 'cc' || overlay === 'nc' || siri) return null
+  if (overlay === 'cc' || overlay === 'nc' || overlay === 'spotlight' || siri) return null
   return (
     <>
       <div className="edge-zone edge-nc" onPointerDown={ncDrag} aria-hidden />
+      <div className="edge-zone edge-ask" onPointerDown={askDrag} aria-hidden />
       <div className="edge-zone edge-cc" onPointerDown={ccDrag} aria-hidden />
     </>
   )

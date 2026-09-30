@@ -292,10 +292,8 @@ function NowPlayingPlatter() {
   const [dx, setDx] = useState(0)
   const track = nowPlayingTrack(np)
   const pos = playbackPosition(np)
-  const dismiss = () => {
-    if (np.playing) toggle()
-    set({ nowPlaying: { ...useOS.getState().nowPlaying, playing: false, dismissed: true } })
-  }
+  // iOS 27: clearing the Now Playing platter hides it but the music keeps playing
+  const dismiss = () => set({ nowPlaying: { ...useOS.getState().nowPlaying, dismissed: true } })
   const onDown = (e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest('button')) return
     e.stopPropagation()
@@ -367,7 +365,7 @@ function LockCustomizer({ onDone }: { onDone: () => void }) {
         <div className="t-footnote" style={{ opacity: 0.7, marginBottom: 8 }}>Clock position</div>
         <div className="row gap8">
           {(['center', 'top'] as const).map((pos) => (
-            <button key={pos} className={`chip ${st.lockClockPosition === pos ? 'active' : ''}`} onClick={() => st.set({ lockClockPosition: pos })}>{pos === 'center' ? 'Classic' : 'Top (with widgets)'}</button>
+            <button key={pos} className={`chip ${st.lockClockPosition === pos ? 'active' : ''}`} onClick={() => st.set({ lockClockPosition: pos })}>{pos === 'center' ? 'Classic' : 'Compact'}</button>
           ))}
         </div>
         <div className="t-footnote" style={{ opacity: 0.7, margin: '12px 0 8px' }}>Clock style</div>

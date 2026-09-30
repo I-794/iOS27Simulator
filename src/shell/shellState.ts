@@ -8,6 +8,8 @@ interface ShellState {
   islandExpanded: string | null
   appLaunching: boolean
   homePage: number
+  /** a query handed from Search or Ask to Siri */
+  siriPending: string | null
   set: (p: Partial<ShellState>) => void
 }
 
@@ -17,5 +19,6 @@ export const useShell = create<ShellState>((set) => ({
   islandExpanded: null,
   appLaunching: false,
   homePage: 0,
+  siriPending: null,
   set: (p) => set(p),
 }))

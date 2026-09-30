@@ -12,6 +12,9 @@ import { fmtRelative } from '../os/time'
 import { springs, animateSpring } from '../os/spring'
 import { useDebounced } from '../os/hooks'
 import { contactName } from '../os/data/people'
+import { useShell } from './shellState'
+import { WEATHER } from '../os/data/world'
+import { WeatherGlyph } from './widgets/Widgets'
 
 const GROUP_ORDER: EntityType[] = ['app', 'contact', 'message', 'mail', 'event', 'reminder', 'photo', 'note', 'file', 'camera', 'setting', 'accessory', 'web']
 const GROUP_LABEL: Record<EntityType, string> = { app: 'Applications', contact: 'Contacts', message: 'Messages', mail: 'Mail', event: 'Calendar', reminder: 'Reminders', photo: 'Photos', note: 'Notes', file: 'Files', camera: 'Home — Camera Events', setting: 'Settings', accessory: 'Home Accessories', web: 'Safari', action: 'Actions' }
@@ -84,11 +87,35 @@ function SpotlightInner() {
   }
 
   const top = results[0]
+  const askSiri = (text: string) => {
+    useShell.getState().set({ siriPending: text.trim() })
+    useOS.getState().set({ overlay: null, siriActive: true, siriMode: 'thinking' })
+  }
+  // Return opens an exact app match; anything else is handed to Siri
+  const submit = () => {
+    const t = q.trim()
+    if (!t) return
+    if (top && top.type === 'app' && top.title.toLowerCase().startsWith(t.toLowerCase())) return open(top)
+    if (top && top.score > 18 && t.split(/\s+/).length === 1) return open(top)
+    askSiri(t)
+  }
   return (
     <div className="spotlight" role="dialog" aria-label="Spotlight Search" onClick={(e) => e.target === e.currentTarget && useOS.getState().setOverlay(null)}>
       <div className="spot-backdrop" onClick={() => useOS.getState().setOverlay(null)} />
       <div className="spot-panel" ref={ref}>
+        <div className="spot-field">
+          <SearchField ref={inputRef} value={q} onChange={setQ} placeholder="Search or Ask" className="glass" onSubmit={submit} />
+        </div>
         <div className="spot-results scroll">
+          {q.trim() && (
+            <button className="spot-ask glass clear" onClick={() => askSiri(q)}>
+              <span className="siri27-pill-orb" />
+              <span className="grow" style={{ textAlign: 'left', minWidth: 0 }}>
+                <span className="t-caption1" style={{ display: 'block', opacity: 0.7 }}>Ask Siri</span>
+                <span className="nowrap" style={{ display: 'block' }}>“{q.trim()}”</span>
+              </span>
+            </button>
+          )}
           {!q && (
             <>
               <div className="spot-section-title"><AISparkle size={14} /> Siri Suggestions</div>
@@ -98,6 +125,19 @@ function SpotlightInner() {
                     <AppIconArt app={a} size={56} />
                     <span>{ICONS[a].name}</span>
                   </button>
+                ))}
+              </div>
+              <button className="spot-weather glass clear" onClick={() => { useOS.getState().setOverlay(null); useOS.getState().launch('weather') }}>
+                <WeatherGlyph icon="cloud-sun" size={28} />
+                <span className="grow" style={{ textAlign: 'left' }}>
+                  <span className="t-headline" style={{ display: 'block' }}>{WEATHER.temp}° {WEATHER.condition}</span>
+                  <span className="t-footnote" style={{ opacity: 0.75 }}>{WEATHER.city} · H:{WEATHER.high}° L:{WEATHER.low}° · Storms Thursday evening</span>
+                </span>
+              </button>
+              <div className="spot-section-title">Recent Searches</div>
+              <div className="spot-chips">
+                {['swerve module tuning', 'stoichiometry practice', 'aurora x2 headphones'].map((r) => (
+                  <button key={r} className="siri27-chip" onClick={() => setQ(r)}>{r}</button>
                 ))}
               </div>
               <div className="spot-section-title">Suggested Actions</div>
@@ -190,9 +230,6 @@ function SpotlightInner() {
             </div>
           )}
           <div style={{ height: 20 }} />
-        </div>
-        <div className="spot-field">
-          <SearchField ref={inputRef} value={q} onChange={setQ} placeholder="Search" className="glass" onSubmit={() => top && open(top)} />
         </div>
       </div>
     </div>

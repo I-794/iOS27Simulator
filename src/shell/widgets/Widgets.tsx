@@ -12,6 +12,7 @@ import { tryLaunch } from '../AppIcon'
 import { openSiri } from '../actions'
 import type { WidgetSize } from '../../os/store'
 import type { AppId } from '../../os/types'
+import { TRACKS as TRACKS_ALL } from '../../os/data/media'
 import { nowPlayingTrack } from '../../os/nowPlaying'
 
 export function WeatherGlyph({ icon, size = 20, color }: { icon: string; size?: number; color?: string }) {
@@ -174,6 +175,7 @@ function MusicWidget({ size }: { size: WidgetSize }) {
   useNow(np.playing ? 1000 : 60_000)
   const track = nowPlayingTrack(np)
   const pos = playbackPosition(np)
+  if (size === 'xl') return <MusicXL />
   return (
     <div className="w-pad w-music" style={{ background: `linear-gradient(135deg, hsl(${track.hue} 55% 38%), hsl(${(track.hue + 40) % 360} 60% 18%))`, color: '#fff' }}>
       <div className="row gap12">
@@ -331,9 +333,45 @@ export const WIDGET_GALLERY: { kind: string; name: string; desc: string; sizes: 
   { kind: 'weather', name: 'Weather', desc: 'Current conditions, hourly and 10-day forecast.', sizes: ['s', 'm', 'l', 'xl'] },
   { kind: 'calendar', name: 'Calendar', desc: 'See upcoming events.', sizes: ['s', 'm', 'l', 'xl'] },
   { kind: 'photos', name: 'Photo Shuffle', desc: 'Shuffle photos of Biscuit or featured memories.', sizes: ['s', 'm', 'l', 'xl'] },
-  { kind: 'music', name: 'Music', desc: 'Now Playing with controls.', sizes: ['s', 'm'] },
+  { kind: 'music', name: 'Music', desc: 'Now Playing with controls. Extra Large fills the whole page.', sizes: ['s', 'm', 'xl'] },
   { kind: 'home', name: 'Home', desc: 'Control accessories.', sizes: ['s', 'm'] },
   { kind: 'batteries', name: 'Batteries', desc: 'iPhone and AirPods battery.', sizes: ['s', 'm'] },
   { kind: 'reminders', name: 'Reminders', desc: 'Check off tasks right from the Home Screen.', sizes: ['s', 'm', 'l'] },
   { kind: 'screentime', name: 'Screen Time', desc: 'Your daily average.', sizes: ['s', 'm'] },
 ]
+
+/** iOS 27 full-screen (Extra Large) Music widget: big artwork, controls and Up Next. */
+function MusicXL() {
+  const np = useOS((s) => s.nowPlaying)
+  const toggle = useOS((s) => s.togglePlay)
+  const next = useOS((s) => s.nextTrack)
+  const prev = useOS((s) => s.prevTrack)
+  const playTrack = useOS((s) => s.playTrack)
+  useNow(np.playing ? 1000 : 60_000)
+  const track = nowPlayingTrack(np)
+  const pos = playbackPosition(np)
+  const i = np.queue.indexOf(np.trackId)
+  const upNext = [1, 2, 3].map((k) => np.queue[(i + k) % np.queue.length]).map((id) => TRACKS_ALL.find((t) => t.id === id)).filter(Boolean) as typeof TRACKS_ALL
+  return (
+    <div className="w-pad w-music-xl" style={{ background: `linear-gradient(180deg, hsl(${track.hue} 55% 42%), hsl(${(track.hue + 40) % 360} 60% 14%))`, color: '#fff' }}>
+      <div className="t-caption1" style={{ opacity: 0.75 }}>{np.playing ? 'Now Playing' : 'Recently Played'} · {np.source ?? track.album}</div>
+      <AlbumArt track={track} size="100%" radius={18} style={{ aspectRatio: '1', height: 'auto', margin: '10px 0 12px', boxShadow: '0 12px 30px rgb(0 0 0 / .35)' }} />
+      <div className="t-title3 nowrap">{track.title}</div>
+      <div className="t-subhead nowrap" style={{ opacity: 0.75 }}>{track.artist}</div>
+      <div className="w-mbar" style={{ margin: '12px 0 10px' }}><div style={{ width: `${Math.min(100, (pos / track.duration) * 100)}%` }} /></div>
+      <div className="row" style={{ justifyContent: 'space-around' }}>
+        <button aria-label="Previous" onClick={(e) => { e.stopPropagation(); prev() }}><SkipForward size={26} fill="#fff" style={{ transform: 'scaleX(-1)' }} /></button>
+        <button aria-label={np.playing ? 'Pause' : 'Play'} onClick={(e) => { e.stopPropagation(); toggle() }}>{np.playing ? <Pause size={34} fill="#fff" strokeWidth={0} /> : <Play size={34} fill="#fff" strokeWidth={0} />}</button>
+        <button aria-label="Next" onClick={(e) => { e.stopPropagation(); next() }}><SkipForward size={26} fill="#fff" /></button>
+      </div>
+      <div className="t-caption1 bold" style={{ opacity: 0.75, margin: '12px 0 6px' }}>Up Next</div>
+      {upNext.map((t) => (
+        <button key={t.id} className="row gap8 w-upnext" onClick={(e) => { e.stopPropagation(); playTrack(t.id, np.queue, np.source) }}>
+          <AlbumArt track={t} size={30} radius={6} />
+          <span className="grow nowrap" style={{ textAlign: 'left' }}>{t.title}</span>
+          <span className="t-caption1" style={{ opacity: 0.6 }}>{t.artist}</span>
+        </button>
+      ))}
+    </div>
+  )
+}

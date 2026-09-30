@@ -26,7 +26,6 @@ const SIZES: Record<string, View> = {
   expSm: { w: 370, h: 88, r: 44 },
   expMd: { w: 370, h: 150, r: 46 },
   expLg: { w: 370, h: 196, r: 48 },
-  siri: { w: 200, h: 37, r: 18.5 },
 }
 
 /** Derive all live activities, including implicit ones (music, recording). */
@@ -55,7 +54,6 @@ export function DynamicIsland() {
   const visible = all.filter((a) => !(st.openApp && a.app === st.openApp && !st.locked && !st.overlay))
   const primary = visible[0]
   const secondary = visible[1]
-  const siri = st.siriActive && st.siriMode === 'listening'
 
   let pres: Pres = 'idle'
   if (event) pres = 'event'
@@ -77,7 +75,6 @@ export function DynamicIsland() {
   if (pres === 'event' && event) size = event.kind === 'faceid' ? SIZES.faceid : ['airdrop', 'airpods', 'carkey', 'nfc', 'airplay'].includes(event.kind) ? SIZES.eventLg : event.kind === 'charging' ? SIZES.wide : SIZES.eventSm
   else if (pres === 'expanded' && expandedAct) size = ['music'].includes(expandedAct.kind) ? SIZES.expLg : ['navigation', 'findmy', 'delivery', 'workout'].includes(expandedAct.kind) ? SIZES.expMd : SIZES.expSm
   else if (pres === 'compact' && primary) size = primary.kind === 'navigation' || primary.kind === 'findmy' ? SIZES.wide : SIZES.compact
-  if (siri && pres === 'idle') size = SIZES.siri
 
   const lp = useLongPress(() => primary && setShell({ islandExpanded: primary.id }))
 
@@ -85,13 +82,13 @@ export function DynamicIsland() {
     if (pres === 'compact' && primary) setShell({ islandExpanded: primary.id })
   }
 
-  if (!st.screenOn) return null
+  // while Siri is up, the Siri orb / answer card takes the island's place
+  if (!st.screenOn || st.siriActive) return null
 
   const content =
     pres === 'event' && event ? <EventView e={event} /> :
       pres === 'expanded' && expandedAct ? <Expanded a={expandedAct} onOpen={(app) => { setShell({ islandExpanded: null }); if (app) { if (st.locked) st.unlock(); st.launch(app) } }} /> :
-        pres === 'compact' && primary ? <Compact a={primary} /> :
-          siri ? <div className="isl-siri"><span className="siri-orb-sm" /><span>Listening…</span></div> : null
+        pres === 'compact' && primary ? <Compact a={primary} /> : null
 
   return (
     <>

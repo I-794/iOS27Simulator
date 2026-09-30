@@ -18,7 +18,7 @@ export function Banner() {
   useLayoutEffect(() => {
     if (banner && ref.current) {
       setReply(false)
-      animateSpring(ref.current, [{ transform: 'translateY(-130%) scale(.9)', opacity: 0.4 }, { transform: 'none', opacity: 1 }], springs.island(), { fill: 'none' })
+      animateSpring(ref.current, [{ transform: 'translateX(-115%)', opacity: 0.6 }, { transform: 'none', opacity: 1 }], springs.sheet(), { fill: 'none' })
     }
   }, [banner?.id])
 

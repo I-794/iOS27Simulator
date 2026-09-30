@@ -56,6 +56,7 @@ interface OSState {
   glassTint: number
   wallpaper: string
   lockClockPosition: 'center' | 'top'
+  lockExtend: boolean
   lockClockStyle: 'bold' | 'rounded' | 'serif' | 'stencil'
   lockClockColor: string
   lockProfile: string
@@ -240,13 +241,16 @@ const DEFAULT_HOME: HomeItem[][] = [
     { type: 'folder', id: 'f-utilities', name: 'Utilities', apps: ['magnifier', 'preview', 'games'] },
   ],
   [
-    { type: 'widget', id: 'w7', kind: 'siri', size: 'xl' },
+    { type: 'widget', id: 'w7', kind: 'photos', size: 'xl' },
   ],
   [
-    { type: 'widget', id: 'w4', kind: 'music', size: 'm' },
+    { type: 'widget', id: 'w9', kind: 'music', size: 'xl' },
+  ],
+  [
+    { type: 'widget', id: 'w8', kind: 'home', size: 'm' },
     { type: 'widget', id: 'w5', kind: 'batteries', size: 's' },
     { type: 'widget', id: 'w6', kind: 'reminders', size: 's' },
-    { type: 'widget', id: 'w8', kind: 'home', size: 'm' },
+    { type: 'widget', id: 'w10', kind: 'siri', size: 'm' },
   ],
 ]
 
@@ -279,9 +283,10 @@ const DEFAULTS = {
   orientation: 'portrait' as Orientation,
   theme: 'light' as Theme,
   themeAuto: false,
-  glassTint: 0.3,
+  glassTint: 0.5,
   wallpaper: 'sequoia',
   lockClockPosition: 'center' as const,
+  lockExtend: false,
   lockClockStyle: 'bold' as const,
   lockClockColor: '#ffffff',
   lockProfile: 'Default',
@@ -567,11 +572,11 @@ export const useOS = create<OSState>()(
     }),
     {
       name: 'ios27-sim',
-      version: 4,
+      version: 5,
       storage: createJSONStorage(() => localStorage),
       migrate: (persisted, version) => {
         const p = (persisted ?? {}) as Partial<OSState>
-        return (version < 4 ? { ...p, homePages: DEFAULT_HOME } : p) as OSState
+        return (version < 5 ? { ...p, homePages: DEFAULT_HOME, glassTint: 0.5 } : p) as OSState
       },
       partialize: (s) => {
         const {
