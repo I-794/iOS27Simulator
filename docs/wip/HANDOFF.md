@@ -47,3 +47,12 @@ Each agent owns a set of app folders and writes its notes to a `docs/wip/agentX-
 - `node tests/shot.mjs <name> '<steps-json>'` takes screenshots, with `SHOT_DIR` and `URL` set as environment variables.
 - `python3 tests/sheet.py out.png a.png b.png` joins screenshots into one contact sheet; it needs `pip install pillow`.
 - In dev builds, `window.__os` is the store, for debugging and tests.
+
+## Shared-file fixes the agents suggested (not applied yet)
+1. **`src/os/hooks.ts` › `useAppRoute`** (agent A): in development, React StrictMode runs the callback twice, so a deep link opens its page twice. Guard it with a ref keyed on `nonce` (`handled.current !== nonce`). Once that's fixed, agent A's `useRouteOnce` wrapper can be removed.
+2. **`src/art/Scene.tsx`** (agent E): render `gen:<id>` scenes with the stored generation. Add `if (scene.startsWith('gen:')) return <GenImage seed={scene.slice(4)} … />` and import GenImage. Without it, Image Playground images saved to Photos show up as the default sunset beach.
+
+## Agent status at pause
+- **A:** Messages and Contacts are done. Phone is partial (its store and Call Context logic are written; the screens aren't). FaceTime is not started.
+- **E:** Siri app, Shortcuts and Image Playground are done. Journal and Freeform are not started.
+- **B, C, D, F, G:** see their notes in `docs/wip/` (still wrapping up when this was written).
