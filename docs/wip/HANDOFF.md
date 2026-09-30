@@ -57,4 +57,5 @@ Each agent owns a set of app folders and writes its notes to a `docs/wip/agentX-
 - **E:** Siri app, Shortcuts and Image Playground are done. Journal and Freeform are not started.
 - **B:** Photos is done. Camera is not started; only `camera/actions.ts` (`runVisionAction`) exists.
 - **D:** Settings is done; it keeps extra preferences in its own `ios27-settings` store. Passwords is not started.
-- **C, F, G:** see their notes in `docs/wip/`.
+- **F:** Clock, Calendar and Reminders are done. Maps has only its map engine (`maps/geo.ts`, `maps/MapView.tsx`); the app screens aren't built. Weather and Find My are not started.
+- **C, G:** see their notes in `docs/wip/`.
