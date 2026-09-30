@@ -35,6 +35,7 @@ export function Screen({ width, height, fullscreen }: { width: number; height: n
   const wallpaper = useOS((s) => s.wallpaper)
   const locked = useOS((s) => s.locked)
   const lowPower = useOS((s) => s.lowPower)
+  const overlay = useOS((s) => s.overlay)
 
   useEffect(() => {
     const off1 = installKeyboardShortcuts()
@@ -73,6 +74,7 @@ export function Screen({ width, height, fullscreen }: { width: number; height: n
       data-accent={accent}
       data-voiceover={voiceOver}
       data-fullscreen={fullscreen}
+      data-overlay={overlay ?? undefined}
       style={style}
     >
       <div className="layer-wallpaper">
@@ -94,7 +96,7 @@ export function Screen({ width, height, fullscreen }: { width: number; height: n
       <Toast />
       <VolumeHUD />
       {nightShift && <div className="nightshift-veil" />}
-      <div className="brightness-veil" style={{ opacity: Math.max(0, (1 - brightness) * 0.7) }} />
+      <div className="brightness-veil" style={{ opacity: Math.max(0, 0.85 - brightness) * 0.8 }} />
       <div className={`screen-off ${screenOn ? '' : 'on'}`} onClick={() => useOS.getState().set({ screenOn: true })} aria-hidden={screenOn} />
     </div>
   )

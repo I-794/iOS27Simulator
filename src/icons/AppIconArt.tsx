@@ -210,7 +210,7 @@ export const ICONS: Record<AppId, IconSpec> = {
   },
   health: {
     name: 'Health', bg: ['#ffffff', '#f5f5f7'], g: ['#ff2d55'], light: true,
-    art: () => <path fill={F('--g1')} d="M72 22c7 2.5 12 9.5 11 18-1.5 13-15 24-33 37C32 64 18.5 53 17 40c-1-8.5 4-15.5 11-18 8-2.8 16.2.5 22 8 5.8-7.5 14-10.8 22-8z" transform="translate(64 16) scale(.4)" />,
+    art: () => <path fill={F('--g1')} d="M72 22c7 2.5 12 9.5 11 18-1.5 13-15 24-33 37C32 64 18.5 53 17 40c-1-8.5 4-15.5 11-18 8-2.8 16.2.5 22 8 5.8-7.5 14-10.8 22-8z"  transform="translate(50 50) scale(1.02) translate(-50 -49)" />,
   },
   fitness: {
     name: 'Fitness', bg: ['#1c1c1e', '#000'], g: ['#fa114f', '#a6ff00', '#00f0ff'],

@@ -73,7 +73,7 @@ export function spring(spec: SpringSpec): SpringEasing {
 /** Named springs mirroring the feel of system animations. */
 export const springs = {
   /** App open: fast, very slight overshoot. */
-  appOpen: () => spring({ response: 0.42, damping: 0.86 }),
+  appOpen: () => spring({ response: 0.4, damping: 0.85 }),
   appClose: () => spring({ response: 0.4, damping: 0.9 }),
   /** Sheets, Control Center. */
   sheet: () => spring({ response: 0.38, damping: 0.88 }),

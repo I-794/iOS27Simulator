@@ -24,7 +24,7 @@ export function SiriOverlay() {
 function SiriOverlayInner() {
   const st = useOS()
   const [text, setText] = useState('')
-  const [typing, setTyping] = useState(st.siriMode !== 'listening' || st.siriSettings.typeToSiri === false ? true : false)
+  const [typing, setTyping] = useState(st.siriMode !== 'listening')
   const [transcript, setTranscript] = useState('')
   const [turnStart, setTurnStart] = useState(0)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -85,7 +85,7 @@ function SiriOverlayInner() {
   const suggestions = lastSiri?.followUps?.length ? lastSiri.followUps : ctx ? contextualSuggestions(st.siriOnscreen) : SIRI_SUGGESTIONS.slice(0, 4)
 
   return (
-    <div className={`siri-overlay mode-${mode}`} role="dialog" aria-label="Siri">
+    <div className={`siri-overlay mode-${mode} ${turns.length ? 'has-turns' : ''}`} role="dialog" aria-label="Siri">
       <div className="siri-edge" aria-hidden />
       <div className="siri-dismiss" onClick={close} />
       <div className="siri-stack" ref={panelRef}>

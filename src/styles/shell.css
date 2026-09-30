@@ -634,3 +634,8 @@
 .lock-stack { padding: 0 2px; }
 .lock-stack-more { text-align: center; color: rgb(255 255 255 / 0.8); font: 500 13px/1 var(--font-text); padding: 12px 0 0; }
 .lock-collapse { align-self: center; color: #fff; font: 600 13px/1 var(--font-text); padding: 8px 14px; border-radius: 99px; background: rgb(255 255 255 / 0.15); margin: 4px 0; }
+.siri-overlay.has-turns .siri-dismiss { background: linear-gradient(to top, rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.25)); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+.ios[data-theme='light'] .siri-overlay.has-turns .siri-dismiss { background: linear-gradient(to top, rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.12)); }
+.ios[data-theme='light'] .siri-overlay.has-turns .siri-user { color: var(--label-primary); text-shadow: none; }
+.screen[data-overlay='switcher'] .app-layer { opacity: 0; transition: opacity 0.2s; }
+.screen[data-overlay='switcher'] .home.behind-app { opacity: 1; filter: blur(18px); transform: scale(1.05); }
