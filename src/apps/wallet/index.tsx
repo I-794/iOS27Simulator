@@ -206,6 +206,7 @@ function CardDetail({ c, onPay }: { c: WalletCard; onPay: () => void }) {
     )
   }
   if (c.kind === 'key') return <CarKeyControls />
+  if (c.kind === 'loyalty') return <PosterPass c={c} />
   return <PassBody c={c} />
 }
 
@@ -289,6 +290,40 @@ function PassBody({ c }: { c: WalletCard }) {
         <Row title="Suggest on Lock Screen" toggle={{ value: true, onChange: () => useOS.getState().showToast('Saved') }} />
         <Row title="Share Pass" tint onClick={() => useOS.getState().set({ shareRequest: { title: c.name, kind: 'file', payload: c.issuer, app: 'wallet' } })} />
         <Row title="Remove Pass" destructive onClick={() => showAlert({ title: `Remove ${c.name}?`, message: 'This demo pass will be removed from Wallet.', actions: [{ label: 'Cancel', style: 'cancel' }, { label: 'Remove', style: 'destructive', onPress: () => useOS.getState().set({ walletCards: useOS.getState().walletCards.filter((x) => x.id !== c.id) }) }] })} />
+      </List>
+    </>
+  )
+}
+
+/** iOS 27 "Poster" pass layout for membership / loyalty / rewards cards. */
+function PosterPass({ c }: { c: WalletCard }) {
+  const d = c.details ?? {}
+  const [stars, max] = (d.Stars ?? '7 / 10').split('/').map((x) => parseInt(x))
+  return (
+    <>
+      <div className="wl-poster" style={{ background: c.gradient }}>
+        <svg className="wl-poster-art" viewBox="0 0 300 220" aria-hidden>
+          <circle cx="220" cy="70" r="90" fill="rgb(255 255 255 / .08)" />
+          <circle cx="60" cy="190" r="70" fill="rgb(0 0 0 / .12)" />
+          <path d="M110 80 h90 l-10 90 q-2 16 -18 16 h-34 q-16 0 -18 -16z" fill="#f5e6d3" />
+          <path d="M200 100 q34 2 30 30 q-4 24 -34 22" fill="none" stroke="#f5e6d3" strokeWidth="10" />
+          <path d="M122 96 h66 l-3 26 h-60z" fill="#7a4b27" />
+          <path d="M140 60 q-8 -14 4 -26 M158 62 q-8 -14 4 -26 M176 60 q-8 -14 4 -26" stroke="rgb(255 255 255 / .6)" strokeWidth="4" fill="none" strokeLinecap="round" />
+        </svg>
+        <div className="wl-poster-top"><span>{c.issuer}</span><span>MEMBER</span></div>
+        <div className="wl-poster-title">{c.name}</div>
+        <div className="wl-poster-stats">
+          <div><b>{stars}</b><span>of {max} stars</span></div>
+          <div><b>{max - stars}</b><span>to a free drink</span></div>
+          <div><b>{d.Member?.replace('Since ', '') ?? '2025'}</b><span>member since</span></div>
+        </div>
+        <div className="wl-poster-bar"><i style={{ width: `${(stars / max) * 100}%` }} /></div>
+      </div>
+      <div className="wl-pass-code poster"><Barcode seed={c.id} /><span>Scan to earn stars · Jamie Park</span></div>
+      <List>
+        <Row title="Rewards Available" detail={stars >= max ? '1 free drink' : 'None yet'} />
+        <Row title="Automatic Updates" toggle={{ value: true, onChange: () => useOS.getState().showToast('Pass updates setting saved') }} />
+        <Row title="Pay with Card" detail="Maple CU Debit" onClick={() => useOS.getState().launch('wallet', { route: 'pay' })} chevron />
       </List>
     </>
   )

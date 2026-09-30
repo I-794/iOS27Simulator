@@ -326,3 +326,4 @@
 .screen.landscape .mu-transport { margin: 6px 10px 4px; }
 .screen.landscape .mu-transport button { width: 60px; height: 60px; }
 .screen.landscape .mu-grid2, .screen.landscape .mu-cats { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.screen.landscape .mu-mini.inline { flex: 0 1 300px; }

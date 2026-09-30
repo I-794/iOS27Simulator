@@ -29,9 +29,14 @@ export default function HomeApp() {
   const [adding, setAdding] = useState(false)
   const onNav = useRef((n: NavApi) => void (navRef.current = n)).current
 
-  useAppRoute('home', (r) => {
+  useAppRoute('home', (r) => go(r))
+  // on a cold launch the nav stack registers after the route arrives — retry briefly
+  const go = (r: string, tries = 0): void => {
     const nav = navRef.current
-    if (!nav) return
+    if (!nav) {
+      if (tries < 20) window.setTimeout(() => go(r, tries + 1), 30)
+      return
+    }
     nav.popToRoot()
     window.setTimeout(() => {
       if (r.startsWith('clip/')) nav.push(<ClipPage id={r.slice(5)} />)
@@ -45,7 +50,7 @@ export default function HomeApp() {
       else if (r === 'thread') nav.push(<ThreadPage />)
       else if (r === 'add') setAdding(true)
     }, 30)
-  })
+  }
 
   return (
     <div className="app-root hm-root">

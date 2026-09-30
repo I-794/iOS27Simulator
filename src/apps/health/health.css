@@ -72,3 +72,6 @@
 .hl-article span { font: var(--t-caption1); opacity: 0.85; }
 .hl-article-body { padding: 0 20px 24px; font: var(--t-body); }
 .hl-muted { color: var(--label-secondary); font: var(--t-footnote); }
+.screen.landscape .hl-chart-area { height: 110px !important; }
+.screen.landscape .hl-chart-area svg { height: 110px; }
+.screen.landscape .hl-card, .screen.landscape .hl-detail { max-width: 640px; margin-left: auto; margin-right: auto; }

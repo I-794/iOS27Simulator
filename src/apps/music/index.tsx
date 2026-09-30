@@ -35,6 +35,7 @@ export default function MusicApp() {
   const lastTop = useRef(0)
   const np = useOS((s) => s.nowPlaying)
   const track = trackById(np.trackId)
+  const landscape = useOS((s) => s.orientation === 'landscape')
 
   useEffect(() => wireAutoMix(), [])
   useOnscreen('music', npOpen ? `Now Playing: ${track?.title} by ${track?.artist}` : 'Browsing Apple Music', { type: 'music', trackId: np.trackId, title: track?.title ?? '', artist: track?.artist ?? '' })
@@ -102,7 +103,7 @@ export default function MusicApp() {
           <NavStack root={<Registrar onNav={regFor(t)}>{roots[t]}</Registrar>} />
         </div>
       ))}
-      {!minimized && track && <MiniPlayer onOpen={() => setNpOpen(true)} floating />}
+      {!minimized && !landscape && track && <MiniPlayer onOpen={() => setNpOpen(true)} floating />}
       <TabBar
         tabs={TABS}
         value={(tab === 'search' ? 'home' : tab) as Exclude<Tab, 'search'>}
@@ -110,7 +111,7 @@ export default function MusicApp() {
         onSearch={() => choose('search')}
         searchActive={tab === 'search'}
         minimized={minimized}
-        accessory={minimized && track ? <MiniPlayer onOpen={() => setNpOpen(true)} /> : undefined}
+        accessory={(minimized || landscape) && track ? <MiniPlayer onOpen={() => setNpOpen(true)} /> : undefined}
       />
       <NowPlaying open={npOpen} onClose={() => setNpOpen(false)} view={npView} setView={setNpView} onArtist={goArtist} onAlbum={goAlbum} />
     </div>

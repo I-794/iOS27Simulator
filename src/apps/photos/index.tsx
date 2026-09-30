@@ -63,14 +63,21 @@ export default function PhotosApp() {
       ui.set({ tab: 'search', viewer: null, editor: null, query: arg })
     } else if (kind === 'album') {
       ui.set({ tab: 'collections', viewer: null, editor: null })
-      const nav = navRefs.collections
-      if (!nav) return
-      nav.popToRoot()
-      window.setTimeout(() => {
-        if (arg.startsWith('sa-')) nav.push(<SharedAlbumPage albumId={arg} />)
-        else if (['favorites', 'captured', 'videos', 'screenshots', 'hidden', 'deleted', 'ids', 'duplicates', 'portrait', 'panoramas', 'selfies', 'edited', 'recents'].includes(arg) || arg.includes(':')) nav.push(<CollectionPage cid={arg} />)
-        else nav.push(<CollectionPage cid={`album:${arg}`} />)
-      }, 50)
+      // the Collections nav stack may not be mounted yet on a cold launch — retry briefly
+      const open = (tries = 0): void => {
+        const nav = navRefs.collections
+        if (!nav) {
+          if (tries < 20) window.setTimeout(() => open(tries + 1), 30)
+          return
+        }
+        nav.popToRoot()
+        window.setTimeout(() => {
+          if (arg.startsWith('sa-')) nav.push(<SharedAlbumPage albumId={arg} />)
+          else if (['favorites', 'captured', 'videos', 'screenshots', 'hidden', 'deleted', 'ids', 'duplicates', 'portrait', 'panoramas', 'selfies', 'edited', 'recents'].includes(arg) || arg.includes(':')) nav.push(<CollectionPage cid={arg} />)
+          else nav.push(<CollectionPage cid={`album:${arg}`} />)
+        }, 50)
+      }
+      open()
     }
   })
 
