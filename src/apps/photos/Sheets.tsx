@@ -148,8 +148,8 @@ export function FaceIDGate({ label, children, unlocked, onUnlock }: { label: str
 }
 
 const PET_FACE: Record<string, { scene: string; ox: number; oy: number; z: number }> = {
-  Biscuit: { scene: 'dog-couch', ox: 66, oy: 62, z: 3.2 },
-  Mochi: { scene: 'cat-window', ox: 50, oy: 47, z: 3.4 },
+  Biscuit: { scene: 'dog-couch', ox: 64, oy: 64, z: 2.6 },
+  Mochi: { scene: 'cat-window', ox: 50, oy: 45, z: 2.6 },
 }
 
 /** Circular face / pet crop (pets from Scene crops, people from contact avatars). */
@@ -158,7 +158,7 @@ export function FaceChip({ id, size = 64 }: { id: string; size?: number }) {
   if (pet) {
     return (
       <div className="ph-face" style={{ width: size, height: size }}>
-        <Scene scene={pet.scene} style={{ width: '100%', height: '100%', transform: `scale(${pet.z})`, transformOrigin: `${pet.ox}% ${pet.oy}%` }} />
+        <Scene scene={pet.scene} style={{ width: '100%', height: '100%', transform: `translate(${50 - pet.ox}%, ${50 - pet.oy}%) scale(${pet.z})`, transformOrigin: `${pet.ox}% ${pet.oy}%` }} />
       </div>
     )
   }

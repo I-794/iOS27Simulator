@@ -8,8 +8,7 @@ import { List, Row } from '../../ui/list'
 import { Scene } from '../../art/Scene'
 import { contactById, CONTACTS, ME } from '../../os/data/people'
 import { fmtPhone, fullName, callContact, facetimeContact, mailContact } from '../contacts/shared'
-import { convTitle } from './engine'
-import { sendMsg } from './engine'
+import { convTitle, sendMsg } from './engine'
 
 /** Conversation details: contact card with call / FaceTime / mail, alerts, pins, shared photos. */
 export function ConvDetails({ open, onClose, conv, onOpenPhoto }: { open: boolean; onClose: () => void; conv: Conversation; onOpenPhoto: (id: string) => void }) {
@@ -25,7 +24,7 @@ export function ConvDetails({ open, onClose, conv, onOpenPhoto }: { open: boolea
   const target = conv.participants[0]
 
   return (
-    <Sheet open={open} onClose={onClose} detent="large" title="" trailing={<button className="bar-btn glass interactive" onClick={onClose}>Done</button>} closeButton={false} label={`${title} details`}>
+    <Sheet open={open} onClose={onClose} detent="large" title="" trailing={<button className="bar-btn glass interactive" onClick={onClose}>Done</button>} closeButton={false} label={`${title} details`} style={{ ['--sheet-bg' as string]: 'var(--grouped-background)' }}>
       <div className="msg-details">
         <div className="msg-details-head">
           {group ? (

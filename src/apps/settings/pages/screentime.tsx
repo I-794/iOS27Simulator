@@ -9,7 +9,7 @@ import { SCREEN_TIME_USAGE } from '../../../os/data/world'
 import { AppIconArt, ICONS } from '../../../icons/AppIconArt'
 import type { AppId, ScreenTimeConfig } from '../../../os/types'
 import { WEEKDAYS_SHORT } from '../../../os/time'
-import { ROUTES, HeroPage, Sub, Ico, Go, Push, ChoicePage, usePrefs, usePref, New27, os, setST, fmtMin } from '../common'
+import { XRow, ROUTES, HeroPage, Sub, Ico, Go, Push, ChoicePage, usePrefs, usePref, New27, os, setST, fmtMin } from '../common'
 
 const CAT_COLORS: Record<string, string> = { Social: '#0a84ff', Education: '#34c759', Entertainment: '#ff9f0a', Games: '#bf5af2', Creativity: '#ff375f', Travel: '#64d2ff' }
 const CAT_ICONS: Record<ScreenTimeConfig['allowances'][number]['category'], typeof Timer> = { Entertainment: Music2, Games: Gamepad2, Social: MessageCircle, Creativity: Palette, Education: GraduationCap }
@@ -187,7 +187,7 @@ function AlwaysAllowedPage() {
         {allowed.map((a) => <Row key={a} icon={<button className="stg-cc-btn remove" aria-label={`Remove ${ICONS[a as AppId]?.name}`} onClick={() => toggle(a)}><Minus size={14} strokeWidth={3.4} /></button>} title={<span className="row gap8"><AppIconArt app={a as AppId} size={28} />{ICONS[a as AppId]?.name}</span>} />)}
       </List>
       <List header="Choose Apps">
-        {all.filter((a) => !allowed.includes(a)).map((a) => <Row key={a} icon={<button className="stg-cc-btn add" aria-label={`Allow ${ICONS[a].name}`} onClick={() => toggle(a)}><Plus size={14} strokeWidth={3.4} /></button>} title={<span className="row gap8"><AppIconArt app={a} size={28} />{ICONS[a].name}</span>} onClick={() => toggle(a)} />)}
+        {all.filter((a) => !allowed.includes(a)).map((a) => <Row key={a} icon={<span className="stg-cc-btn add" aria-hidden><Plus size={14} strokeWidth={3.4} /></span>} label={`Allow ${ICONS[a].name}`} title={<span className="row gap8"><AppIconArt app={a} size={28} />{ICONS[a].name}</span>} onClick={() => toggle(a)} />)}
       </List>
     </Sub>
   )
@@ -536,7 +536,7 @@ function SchedulesPage() {
     <Sub title="Schedules" trailing={<button className="bar-btn icon glass interactive" aria-label="Add schedule" onClick={add}><Plus size={22} /></button>}>
       <List footer="During a schedule, the chosen apps are unavailable on Mia’s iPhone.">
         {schedules.map((s) => (
-          <Row
+          <XRow
             key={s.id}
             title={s.name}
             subtitle={`${s.start}–${s.end} · ${s.days === 'everyday' ? 'Every Day' : s.days === 'weekdays' ? 'Weekdays' : 'Weekends'} · ${s.apps.length} app${s.apps.length === 1 ? '' : 's'}`}

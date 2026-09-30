@@ -110,7 +110,33 @@ export function photoSearch(q: string, lib: Photo[]): Photo[] {
     if (p.place && t.length > 3 && p.place.toLowerCase().includes(t)) res.set(p.id, p)
     if (p.keywords.some((k) => k === t)) res.set(p.id, p)
   }
-  return [...res.values()].sort((a, b) => b.ts - a.ts)
+  return refine(t, [...res.values()], lib).sort((a, b) => b.ts - a.ts)
+}
+
+const STOP = new Set(['at', 'the', 'in', 'on', 'of', 'with', 'from', 'my', 'photos', 'photo', 'pictures', 'picture', 'show', 'find', 'and', 'a', 'an', 'to', 'for', 'during', 'while', 'near', 'by', 'taken', 'shot', 'pics', 'pic', 'all', 'any', 'some'])
+
+/** Tighten natural-language results: named people/pets are required, and descriptive words narrow further when possible. */
+function refine(t: string, results: Photo[], lib: Photo[]): Photo[] {
+  const words = t.split(/[^a-z0-9']+/).filter(Boolean)
+  const ents = PEOPLE_AND_PETS.filter((x) => x.id !== 'me' && words.some((w) => w === x.id.toLowerCase() || w === x.name.split(' ')[0].toLowerCase()))
+  let out = results
+  if (ents.length) {
+    const has = (p: Photo) => ents.every((x) => p.people?.includes(x.id) || p.pets?.includes(x.id))
+    out = results.filter(has)
+    if (!out.length) out = lib.filter(has)
+  }
+  const entWords = new Set(ents.flatMap((x) => [x.id.toLowerCase(), x.name.split(' ')[0].toLowerCase()]))
+  const rest = words.filter((w) => w.length > 2 && !STOP.has(w) && !entWords.has(w))
+  if (rest.length && out.length > 1) {
+    const stem = (w: string) => w.replace(/(ing|es|s)$/, '')
+    const hit = (p: Photo, w: string) => {
+      const hay = `${p.keywords.join(' ')} ${p.description} ${p.place ?? ''}`.toLowerCase()
+      return hay.includes(w) || hay.includes(stem(w))
+    }
+    const strict = out.filter((p) => rest.every((w) => hit(p, w)))
+    if (strict.length) out = strict
+  }
+  return out
 }
 
 export function useCollection(cid: string): CollectionInfo {

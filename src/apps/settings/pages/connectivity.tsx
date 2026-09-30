@@ -7,7 +7,7 @@ import { useNav } from '../../../ui/nav'
 import { useOS } from '../../../os/store'
 import { AppIconArt, ICONS } from '../../../icons/AppIconArt'
 import type { AppId } from '../../../os/types'
-import { ROUTES, HeroPage, Sub, Ico, ChoicePage, Push, usePrefs, usePref, Note, New27, os, setGames, setAirpods, useGo } from '../common'
+import { XRow, ROUTES, HeroPage, Sub, Ico, ChoicePage, Push, usePrefs, usePref, Note, New27, os, setGames, setAirpods, useGo } from '../common'
 
 // ------------------------------------------------------------------ Wi-Fi
 const OTHER_NETWORKS = [
@@ -68,7 +68,7 @@ function WifiPage() {
       <List>
         <Row title="Wi‑Fi" toggle={{ value: net.wifi, onChange: (v) => os().setNet({ wifi: v, airplane: v ? false : net.airplane, activePath: v ? 'wifi' : net.cellular ? 'cellular' : 'none' }) }} />
         {net.wifi && net.wifiNetwork && (
-          <Row
+          <XRow
             title={<span className="row gap6"><Check size={18} strokeWidth={3} className="stg-check" />{net.wifiNetwork}</span>}
             trailing={<span className="row gap8 secondary"><Lock size={15} /><Bars q={net.wifiQuality} /><button className="stg-info" aria-label={`${net.wifiNetwork} info`} onClick={(e) => { e.stopPropagation(); nav.push(<NetworkInfo name={net.wifiNetwork} />) }}><Info size={22} /></button></span>}
             onClick={() => nav.push(<NetworkInfo name={net.wifiNetwork} />)}
@@ -240,7 +240,7 @@ function BluetoothPage() {
     const I = btIcon(d.kind)
     const c = connected(d)
     return (
-      <Row
+      <XRow
         icon={<span className="stg-dev-ico"><I size={18} /></span>}
         title={d.name}
         onClick={() => toggle(d)}

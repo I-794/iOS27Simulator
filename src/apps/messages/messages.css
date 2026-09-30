@@ -176,7 +176,8 @@
   padding: 0 16px;
   color: var(--label-secondary);
 }
-.msg-searchbar-field input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: var(--t-body); letter-spacing: -0.43px; color: var(--label-primary); }
+.msg-searchbar-field { min-width: 0; }
+.msg-searchbar-field input { flex: 1; min-width: 0; width: 100%; border: 0; outline: 0; background: transparent; font: var(--t-body); letter-spacing: -0.43px; color: var(--label-primary); }
 .msg-searchbar-field input::placeholder { color: var(--label-secondary); }
 .msg-searchbar .msg-circle { width: 48px; height: 48px; border-radius: 24px; }
 .msg-search-clear { width: 20px; height: 20px; border-radius: 10px; display: grid; place-items: center; background: var(--label-tertiary); color: var(--system-background); }

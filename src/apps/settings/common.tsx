@@ -4,9 +4,10 @@
 import { type ReactNode, type ComponentType } from 'react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { Check } from 'lucide-react'
+import { Check, ChevronRight } from 'lucide-react'
 import { useNav, Page } from '../../ui/nav'
-import { List, Row, SettingsIcon } from '../../ui/list'
+import { List, Row, SettingsIcon, type RowProps } from '../../ui/list'
+import { Switch } from '../../ui/controls'
 import { useOS } from '../../os/store'
 
 // ---------------------------------------------------------------- route registry
@@ -51,6 +52,33 @@ export function Go({ to, title, icon, detail, subtitle }: { to: string; title?: 
 export function Push({ title, icon, detail, subtitle, page, tint }: { title: ReactNode; icon?: ReactNode; detail?: ReactNode; subtitle?: ReactNode; page: () => ReactNode; tint?: boolean }) {
   const nav = useNav()
   return <Row title={title} icon={icon} detail={detail} subtitle={subtitle} tint={tint} chevron={!tint} onClick={() => nav.push(page())} />
+}
+
+/** Like Row, but rendered as a div[role=button] so it can contain trailing buttons (no nested <button>). */
+export function XRow({ title, subtitle, detail, icon, chevron, onClick, toggle, trailing, destructive, tint, compact, style, className = '', label, disabled }: RowProps) {
+  const cls = `row-item pressable-row ${icon ? 'has-icon' : ''} ${destructive ? 'destructive' : ''} ${tint ? 'tint' : ''} ${compact ? 'compact' : ''} ${className}`
+  return (
+    <div
+      className={cls}
+      style={style}
+      role="button"
+      tabIndex={0}
+      aria-label={label}
+      aria-disabled={disabled}
+      onClick={() => !disabled && onClick?.()}
+      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) { e.preventDefault(); onClick?.() } }}
+    >
+      {icon}
+      <span className="row-main">
+        <span className="row-title">{title}</span>
+        {subtitle && <span className="row-sub">{subtitle}</span>}
+      </span>
+      {detail !== undefined && <span className="row-detail">{detail}</span>}
+      {trailing}
+      {toggle && <Switch checked={toggle.value} onChange={toggle.onChange} color={toggle.color} label={typeof title === 'string' ? title : label} disabled={disabled} />}
+      {chevron && <ChevronRight className="chev" size={18} strokeWidth={2.6} />}
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------- page shells

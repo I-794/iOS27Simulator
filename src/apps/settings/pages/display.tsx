@@ -403,7 +403,7 @@ function ControlsPage() {
       {more.length > 0 && (
         <List header="More Controls">
           {more.map((c) => (
-            <Row key={c.id} icon={<button className="stg-cc-btn add" aria-label={`Add ${c.name}`} onClick={() => os().set({ controls: [...controls, c.id] })}><Plus size={14} strokeWidth={3.4} /></button>} title={<span className="row gap8"><c.icon size={18} className="secondary" />{c.name}</span>} onClick={() => os().set({ controls: [...controls, c.id] })} />
+            <Row key={c.id} icon={<span className="stg-cc-btn add" aria-hidden><Plus size={14} strokeWidth={3.4} /></span>} label={`Add ${c.name}`} title={<span className="row gap8"><c.icon size={18} className="secondary" />{c.name}</span>} onClick={() => os().set({ controls: [...controls, c.id] })} />
           ))}
         </List>
       )}

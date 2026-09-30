@@ -430,3 +430,5 @@
 .ios.landscape .stg-root .page-scroll > section,
 .ios.landscape .stg-root .page-scroll > div { max-width: 640px; margin-left: auto; margin-right: auto; }
 .ios.landscape .stg-root .page-scroll { padding-left: var(--safe-left); padding-right: var(--safe-right); }
+.row-item.pressable-row { cursor: pointer; }
+.row-item.pressable-row:active { background: var(--fill-tertiary); }
