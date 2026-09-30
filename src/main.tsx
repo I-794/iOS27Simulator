@@ -15,3 +15,7 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+if (import.meta.env.DEV) {
+  void import('./os/store').then((m) => ((window as unknown as { __os: unknown }).__os = m.useOS))
+}
