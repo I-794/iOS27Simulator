@@ -128,3 +128,13 @@
 .ml-sig { margin-left: auto; font: var(--t-footnote); color: var(--label-tertiary); }
 .ml-undo { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--safe-bottom) + 60px); z-index: 900; display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 16px; border-radius: 24px; font: var(--t-subhead); white-space: nowrap; }
 .ml-undo button { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 600; }
+/* landscape: respect the sensor-housing safe areas */
+.ml-root .ml-cats, .ml-root .ml-filterchip, .ml-root .ml-priority, .ml-root .ml-list, .ml-root .ml-msg, .ml-root .ml-msg-skel,
+.ml-root .ml-search-head, .ml-root .ml-skel, .ml-root .ml-tophits { margin-left: var(--safe-left); margin-right: var(--safe-right); }
+.ml-root .ml-priority { margin-left: calc(var(--safe-left) + 12px); margin-right: calc(var(--safe-right) + 12px); }
+.ml-root .ml-list.card { margin-left: calc(var(--safe-left) + 12px); margin-right: calc(var(--safe-right) + 12px); }
+.ml-root .list { margin-left: calc(var(--safe-left) + 16px); margin-right: calc(var(--safe-right) + 16px); }
+.ml-root .list-header, .ml-root .large-subtitle { padding-left: calc(var(--safe-left) + 32px); }
+.ml-root .large-subtitle { padding-left: calc(var(--safe-left) + 16px); }
+.ml-bottombar, .ml-editbar { left: calc(var(--safe-left) + 16px); right: calc(var(--safe-right) + 16px); }
+.screen.landscape .ml-msg { max-width: 680px; margin-left: auto; margin-right: auto; }

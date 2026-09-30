@@ -127,3 +127,14 @@ test('Music: playback reaches the Dynamic Island from the app', async ({ page })
   await page.keyboard.press('Alt+H')
   await expect(page.locator('.island.pres-compact')).toBeVisible()
 })
+
+test('Camera: leaving mid-recording saves the clip', async ({ page }) => {
+  await boot(page)
+  await launch(page, 'camera', 'video')
+  const before = (await os(page, 's.photos.length')) as number
+  await page.getByRole('button', { name: 'Record' }).click()
+  await page.waitForTimeout(1500)
+  await page.keyboard.press('Alt+H')
+  await expect.poll(() => os(page, 's.photos.length')).toBe(before + 1)
+  expect(await os(page, 's.photos.slice().sort((a, b) => b.ts - a.ts)[0].kind')).toBe('video')
+})

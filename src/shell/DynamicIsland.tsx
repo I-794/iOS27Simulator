@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Play, Pause, SkipForward, SkipBack, Phone, PhoneOff, MicOff, Timer as TimerIcon, Navigation, BellOff, Bell, Check, Airplay, Headphones, Wifi, Link2, BatteryCharging, Zap, Package, Circle, Square, Heart, ScanFace, Lock, CarFront, Plane } from 'lucide-react'
+import { Play, Pause, SkipForward, SkipBack, Phone, PhoneOff, MicOff, Timer as TimerIcon, Navigation, BellOff, Bell, Check, Airplay, Headphones, Wifi, Link2, BatteryCharging, Zap, Package, Circle, Square, Heart, ScanFace, LockOpen, CarFront, Plane } from 'lucide-react'
 import { useOS, playbackPosition } from '../os/store'
 import { useNow, useLongPress } from '../os/hooks'
 import { fmtDuration } from '../os/time'
@@ -316,7 +316,7 @@ function EventView({ e }: { e: NonNullable<ReturnType<typeof useOS.getState>['is
   }, [e.kind])
   switch (e.kind) {
     case 'faceid':
-      return <div className={`isl-faceid ${done ? 'done' : ''}`}>{done ? <Lock size={34} color="#fff" strokeWidth={2} style={{ transform: 'translateY(-2px)' }} /> : <ScanFace size={40} color="#fff" strokeWidth={1.6} />}</div>
+      return <div className={`isl-faceid ${done ? 'done' : ''}`}>{!done ? <ScanFace size={40} color="#fff" strokeWidth={1.6} /> : e.icon === 'unlock' ? <LockOpen size={34} color="#fff" strokeWidth={2} style={{ transform: 'translateY(-2px)' }} /> : <Check size={40} color="#30d158" strokeWidth={2.6} />}</div>
     case 'silent':
       return (
         <div className="isl-event-row">

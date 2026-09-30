@@ -1,14 +1,26 @@
 /* Rendered page mockups for the demo documents (PDF, Pages, Numbers, images, CAD).
  * Shared by Preview, Files and Mail attachments. */
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { FILES } from '../../os/data/world'
+import { at } from '../../os/time'
 import { Scene } from '../../art/Scene'
 import './docs.css'
 
-export type DemoFile = (typeof FILES)[number]
+export interface DemoFile { id: string; name: string; folder: string; size: string; kind: string; modified: number }
 
-export const fileById = (id: string) => FILES.find((f) => f.id === id)
-export const fileByName = (name: string) => FILES.find((f) => f.name.toLowerCase() === name.toLowerCase())
+/** iOS 27 Preview: additional document formats (sample files kept "On My iPhone"). */
+export const EXTRA_FILES: DemoFile[] = [
+  { id: 'x-md', name: 'Robotics Notes.md', folder: 'On My iPhone', size: '3 KB', kind: 'md', modified: at(-1, 20, 40) },
+  { id: 'x-csv', name: 'Scouting Data.csv', folder: 'On My iPhone', size: '2 KB', kind: 'csv', modified: at(-2, 18, 5) },
+  { id: 'x-epub', name: 'The Clockwork Garden.epub', folder: 'On My iPhone', size: '1.8 MB', kind: 'epub', modified: at(-9, 21, 0) },
+  { id: 'x-rtf', name: 'Thank You Letter.rtf', folder: 'On My iPhone', size: '12 KB', kind: 'rtf', modified: at(-4, 17, 30) },
+  { id: 'x-key', name: 'Regional Pitch.key', folder: 'On My iPhone', size: '6.4 MB', kind: 'key', modified: at(-3, 22, 15) },
+]
+export const ALL_FILES: DemoFile[] = [...FILES, ...EXTRA_FILES]
+
+export const fileById = (id: string) => ALL_FILES.find((f) => f.id === id)
+export const fileByName = (name: string) => ALL_FILES.find((f) => f.name.toLowerCase() === name.toLowerCase())
+export const RAW_KINDS = new Set(['image', 'cad', 'sheet', 'csv', 'key'])
 
 const d = (off: number, o: Intl.DateTimeFormatOptions = { month: 'long', day: 'numeric', year: 'numeric' }) => {
   const x = new Date()
@@ -289,6 +301,110 @@ function ImageDoc({ scene }: { scene: string }): ReactNode[] {
   return [<div className="pvd-image"><Scene scene={scene} /></div>]
 }
 
+
+// ------------------------------------------------------------------ additional formats (iOS 27)
+const MD_SRC = [
+  ['h1', 'Robotics Notes'],
+  ['p', 'Quick reference for build season. Written in Markdown so it syncs with the team wiki.'],
+  ['h2', 'Intake'],
+  ['li', 'Roller spacing: **2.5 in**'],
+  ['li', 'Compliance wheels, 60A durometer'],
+  ['h2', 'Autonomous'],
+  ['code', 'path.follow("three-piece")\nshooter.spinUp(4200)'],
+  ['quote', 'Test early, test often. — Mr. Delgado'],
+] as const
+
+function MarkdownDoc(): ReactNode[] {
+  return [
+    <div className="pvd-md">
+      <div className="pvd-md-badge">Markdown</div>
+      {MD_SRC.map(([t, x], i) =>
+        t === 'h1' ? <h1 key={i}>{x}</h1> : t === 'h2' ? <h2 key={i}>{x}</h2> : t === 'li' ? <div key={i} className="pvd-md-li">• <span dangerouslySetInnerHTML={{ __html: x.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>') }} /></div> : t === 'code' ? <pre key={i}>{x}</pre> : t === 'quote' ? <blockquote key={i}>{x}</blockquote> : <p key={i}>{x}</p>,
+      )}
+    </div>,
+  ]
+}
+
+const CSV = `Team,Matches,Avg Auto,Avg Teleop,Climb %
+1138,8,14.5,38.2,88
+2471,8,12.0,41.6,75
+5410,8,9.5,33.1,63
+7729,8,11.0,36.4,70
+8033,8,6.5,24.9,38
+9001,8,13.0,29.7,50`
+
+function CsvTable() {
+  const [head, ...rows] = CSV.split('\n').map((r) => r.split(','))
+  const [sort, setSort] = useState<{ col: number; dir: 1 | -1 }>({ col: 0, dir: 1 })
+  const sorted = [...rows].sort((a, b) => {
+    const x = a[sort.col], y = b[sort.col]
+    const n = parseFloat(x) - parseFloat(y)
+    return (isNaN(n) ? x.localeCompare(y) : n) * sort.dir
+  })
+  return (
+    <div className="pvd-csv">
+      <div className="pvd-sheet-title">Scouting Data.csv <span style={{ background: '#8e8e93' }}>CSV · {rows.length} rows</span></div>
+      <table>
+        <thead>
+          <tr>{head.map((h, i) => <th key={i} onClick={() => setSort((s) => ({ col: i, dir: s.col === i ? (-s.dir as 1 | -1) : 1 }))}>{h} {sort.col === i ? (sort.dir === 1 ? '▲' : '▼') : ''}</th>)}</tr>
+        </thead>
+        <tbody>{sorted.map((r, i) => <tr key={i} className={r[0] === '7729' ? 'me' : ''}>{r.map((c, j) => <td key={j} className={j ? 'num' : ''}>{c}</td>)}</tr>)}</tbody>
+      </table>
+      <div className="pvd-csv-foot">Tap a column header to sort · Team 7729 highlighted</div>
+    </div>
+  )
+}
+
+function EpubDoc(): ReactNode[] {
+  return [
+    <div className="pvd-book">
+      <div className="pvd-book-ch">Chapter One</div>
+      <h1>The Clockwork Garden</h1>
+      <p className="pvd-dropcap">Every morning at six, the garden wound itself. Brass tulips unfolded with a sound like a pocket watch being opened, and the copper sparrows on the fence began their small mechanical song.</p>
+      <p>Wren had lived next door for eleven years and had never once seen who tended it. The gate was always locked; the hedges were always trimmed exactly two inches above the stone wall.</p>
+      <p>Then, on the first day of autumn, the gate stood open.</p>
+    </div>,
+    <div className="pvd-book">
+      <p>She stepped inside before she could change her mind. The path was lined with gears the size of dinner plates, half-buried in moss, turning slowly as if the whole garden were breathing.</p>
+      <p>“You’re late,” said a voice from somewhere among the sunflowers. “The roses have been asking for you.”</p>
+      <p>Wren looked down. The nearest rose, its petals thin as hammered foil, turned on its stem to face her.</p>
+    </div>,
+  ]
+}
+
+function RtfDoc(): ReactNode[] {
+  return [
+    <div className="pvd-rtf">
+      <p className="pvd-rtf-date">{d(-4)}</p>
+      <p>Dear Mr. Delgado,</p>
+      <p>Thank you for staying late every Thursday so our team could finish the intake. Because of your help, we <b>scored three game pieces in autonomous</b> for the first time at the scrimmage.</p>
+      <p style={{ color: '#0a5cc2' }}>We couldn’t have done it without you.</p>
+      <p><i>With gratitude,</i></p>
+      <p className="pvd-rtf-sig">Jamie Park<br /><span>Circuit Breakers #7729</span></p>
+    </div>,
+  ]
+}
+
+function KeynoteDoc(): ReactNode[] {
+  const slides = [
+    { bg: 'linear-gradient(135deg,#1b2a6b,#5b6be8)', t: 'Circuit Breakers #7729', s: 'Regional Qualifier Pitch' },
+    { bg: 'linear-gradient(135deg,#0d6e4f,#34c78f)', t: 'Our Robot', s: 'Swerve drive · 3-piece auto' },
+    { bg: 'linear-gradient(135deg,#6d1b3b,#ff2d55)', t: 'Outreach', s: '240 students reached this year' },
+    { bg: 'linear-gradient(135deg,#7a4b00,#ff9f0a)', t: 'Thank You', s: 'Sponsors · Mentors · Families' },
+  ]
+  return [
+    <div className="pvd-key">
+      {slides.map((sl, i) => (
+        <div key={i} className="pvd-slide" style={{ background: sl.bg }}>
+          <b>{sl.t}</b>
+          <span>{sl.s}</span>
+          <i>{i + 1}</i>
+        </div>
+      ))}
+    </div>,
+  ]
+}
+
 export function pagesFor(file: DemoFile): ReactNode[] {
   switch (file.id) {
     case 'f1': return CadDoc()
@@ -301,6 +417,11 @@ export function pagesFor(file: DemoFile): ReactNode[] {
     case 'f8': return BudgetDoc()
     case 'f9': return ImageDoc({ scene: 'robot-arena' })
     case 'f10': return PermissionDoc()
+    case 'x-md': return MarkdownDoc()
+    case 'x-csv': return [<CsvTable />]
+    case 'x-epub': return EpubDoc()
+    case 'x-rtf': return RtfDoc()
+    case 'x-key': return KeynoteDoc()
     default: return [<>{lines(12)}</>]
   }
 }
@@ -308,12 +429,12 @@ export function pagesFor(file: DemoFile): ReactNode[] {
 /** Renders every page of a document as paper sheets. `raw` pages (image/cad/sheet) render without paper chrome. */
 export function DocPages({ file, pageClass = '', renderOverlay }: { file: DemoFile; pageClass?: string; renderOverlay?: (i: number) => ReactNode }) {
   const pages = pagesFor(file)
-  const raw = file.kind === 'image' || file.kind === 'cad' || file.kind === 'sheet'
+  const raw = RAW_KINDS.has(file.kind)
   return (
     <div className={`pvd-stack ${raw ? 'raw' : ''}`}>
       {pages.map((p, i) => (
         <div key={i} className={`pvd-wrap ${pageClass}`}>
-          <Page n={i + 1} total={pages.length} className={raw ? `raw ${file.kind}` : file.id === 'f10' ? 'scan' : ''}>{p}</Page>
+          <Page n={i + 1} total={pages.length} className={raw ? `raw ${file.kind}` : file.id === 'f10' ? 'scan' : file.kind === 'epub' ? 'book' : ''}>{p}</Page>
           {renderOverlay?.(i)}
         </div>
       ))}
@@ -324,10 +445,10 @@ export function DocPages({ file, pageClass = '', renderOverlay }: { file: DemoFi
 /** Small first-page thumbnail. */
 export function DocThumb({ file, className = '' }: { file: DemoFile; className?: string }) {
   const first = pagesFor(file)[0]
-  const raw = file.kind === 'image' || file.kind === 'cad' || file.kind === 'sheet'
+  const raw = RAW_KINDS.has(file.kind)
   return (
     <div className={`pvd-thumb ${className} ${raw ? 'raw' : ''}`} aria-hidden>
-      <Page className={raw ? `raw ${file.kind}` : file.id === 'f10' ? 'scan' : ''}>{first}</Page>
+      <Page className={raw ? `raw ${file.kind}` : file.id === 'f10' ? 'scan' : file.kind === 'epub' ? 'book' : ''}>{first}</Page>
     </div>
   )
 }

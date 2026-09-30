@@ -69,3 +69,34 @@
 .pvd-chart i { flex: 1; background: linear-gradient(#34c759, #248a3d); border-radius: 0.8cqw 0.8cqw 0 0; }
 .pvd-thumb { width: 100%; pointer-events: none; }
 .pvd-thumb .pvd-page { box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.12), 0 2px 6px rgb(0 0 0 / 0.1); }
+/* additional formats */
+.pvd-md h1 { margin-top: 2cqw !important; }
+.pvd-md-badge { display: inline-block; font: 600 2.2cqw/1 var(--font-mono, monospace); color: #fff; background: #1c1c1e; padding: 0.8cqw 1.6cqw; border-radius: 1cqw; }
+.pvd-md-li { margin: 0 0 1.2cqw 1cqw; font-family: -apple-system, system-ui, sans-serif; }
+.pvd-md pre { background: #f2f2f7; padding: 2cqw 2.5cqw; border-radius: 1.5cqw; font: 2.7cqw/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
+.pvd-md blockquote { margin: 2cqw 0; padding-left: 2.5cqw; border-left: 0.8cqw solid #d0d0d6; color: #666; font-style: italic; }
+.pvd-md p { font-family: -apple-system, system-ui, sans-serif; }
+.pvd-csv { position: absolute; inset: 0; padding: 3cqw; display: flex; flex-direction: column; gap: 2cqw; font-size: 2.6cqw; }
+.pvd-csv table { width: 100%; border-collapse: collapse; }
+.pvd-csv th { background: #f2f2f7; text-align: left; cursor: pointer; user-select: none; white-space: nowrap; }
+.pvd-csv th, .pvd-csv td { border: 0.2cqw solid #e0e0e5; padding: 1cqw 1.2cqw; }
+.pvd-csv td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.pvd-csv tr.me td { background: #fff7d6; font-weight: 600; }
+.pvd-csv-foot { color: #8e8e93; font-size: 2.2cqw; }
+.pvd-page.raw.csv { aspect-ratio: 4 / 3; }
+.pvd-page.book { background: #fbf6ec; font-family: 'Iowan Old Style', 'Palatino', Georgia, serif; }
+.pvd-book-ch { text-align: center; font: 600 2.4cqw/1 -apple-system, system-ui, sans-serif; letter-spacing: 0.2em; text-transform: uppercase; color: #9a7b4f; margin: 6cqw 0 2cqw; }
+.pvd-book h1 { text-align: center; font-family: 'Iowan Old Style', Georgia, serif !important; margin-bottom: 6cqw !important; }
+.pvd-book p { text-indent: 4cqw; font-size: 3.4cqw; line-height: 1.6; color: #3b2f22; }
+.pvd-dropcap { text-indent: 0 !important; }
+.pvd-dropcap::first-letter { float: left; font-size: 10cqw; line-height: 0.9; padding-right: 1cqw; color: #9a7b4f; }
+.pvd-rtf { font-family: 'Helvetica Neue', Helvetica, sans-serif; font-size: 3.3cqw; }
+.pvd-rtf-date { color: #666; text-align: right; }
+.pvd-rtf-sig { margin-top: 5cqw !important; font-family: 'Snell Roundhand', 'Brush Script MT', cursive; font-size: 5cqw; }
+.pvd-rtf-sig span { font-family: 'Helvetica Neue', sans-serif; font-size: 2.6cqw; color: #666; }
+.pvd-page.raw.key { background: #1c1c1e; aspect-ratio: 4 / 3; }
+.pvd-key { position: absolute; inset: 0; padding: 3cqw; display: grid; grid-template-columns: 1fr 1fr; gap: 3cqw; }
+.pvd-slide { position: relative; border-radius: 1.5cqw; color: #fff; display: flex; flex-direction: column; justify-content: center; padding: 3cqw; gap: 1cqw; box-shadow: 0 1cqw 3cqw rgb(0 0 0 / 0.4); }
+.pvd-slide b { font: 700 4cqw/1.1 -apple-system, system-ui, sans-serif; }
+.pvd-slide span { font: 2.4cqw/1.2 -apple-system, system-ui, sans-serif; opacity: 0.85; }
+.pvd-slide i { position: absolute; right: 2cqw; bottom: 1.5cqw; font: 2cqw/1 -apple-system, sans-serif; opacity: 0.7; font-style: normal; }

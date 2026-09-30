@@ -10,7 +10,7 @@ import { Avatar, AISparkle, Button, Spinner, Chip } from '../../ui/controls'
 import { Sheet, openMenu, showAlert } from '../../ui/overlay'
 import { useOS } from '../../os/store'
 import { useAppRoute, useOnscreen, useNow } from '../../os/hooks'
-import { summarize, smartReplies } from '../../os/ai/writing'
+import { smartReplies } from '../../os/ai/writing'
 import { search } from '../../os/search'
 import { fmtRelative, fmtDate, fmtTime, HOUR } from '../../os/time'
 import { CONTACTS, contactName } from '../../os/data/people'
@@ -19,7 +19,7 @@ import { DocPages, fileByName } from '../preview/docs'
 import { Scene } from '../../art/Scene'
 import {
   useMailLocal, BOX_TITLE, inBox, CATEGORY_META, isPriority, contactFor, previewFor, whenFromFacts, findExistingEvent, calendarFor, moveMail, patchMails, deleteForever,
-  initialsOf, colorFor, ME_EMAIL, type Box, type Category,
+  initialsOf, colorFor, ME_EMAIL, mailSummary, type Box, type Category,
 } from './model'
 import './mail.css'
 
@@ -212,12 +212,14 @@ function MailboxView({ box }: { box: Box }) {
 }
 
 // ------------------------------------------------------------------ row with swipe actions
-let openRowReset: (() => void) | null = null
+let openRow: { id: string; reset: () => void } | null = null
 
 function MailRow({ m, onOpen, editing, selected, onSelect, onMove, box, compact }: { m: MailMessage; onOpen: () => void; editing: boolean; selected: boolean; onSelect: () => void; onMove: () => void; box: Box; compact?: boolean }) {
   const [x, setX] = useState(0)
   const [anim, setAnim] = useState(false)
   const drag = useRef<{ x0: number; y0: number; base: number; active: boolean; moved: boolean } | null>(null)
+  const justDragged = useRef(false)
+  const tapClose = useRef(false)
   const vips = useMailLocal((s) => s.vips)
   const c = contactFor(m.from.email)
   const sent = m.folder === 'sent' || m.folder === 'drafts'
@@ -254,10 +256,11 @@ function MailRow({ m, onOpen, editing, selected, onSelect, onMove, box, compact 
   }
   const onPointerDown = (e: React.PointerEvent) => {
     if (editing || e.button !== 0) return
-    if (openRowReset && openRowReset !== reset) {
-      openRowReset()
-      openRowReset = null
+    if (openRow && openRow.id !== m.id) {
+      openRow.reset()
+      openRow = null
     }
+    tapClose.current = x !== 0
     drag.current = { x0: e.clientX, y0: e.clientY, base: x, active: false, moved: false }
   }
   const onPointerMove = (e: React.PointerEvent) => {
@@ -282,6 +285,10 @@ function MailRow({ m, onOpen, editing, selected, onSelect, onMove, box, compact 
     const d = drag.current
     drag.current = null
     if (!d) return
+    if (d.active) {
+      justDragged.current = true
+      window.setTimeout(() => (justDragged.current = false), 60)
+    }
     if (!d.active) {
       if (x !== 0) return reset()
       return
@@ -291,17 +298,20 @@ function MailRow({ m, onOpen, editing, selected, onSelect, onMove, box, compact 
       window.setTimeout(doArchive, 200)
     } else if (x < -60) {
       settle(-222)
-      openRowReset = reset
+      openRow = { id: m.id, reset }
     } else if (x > 150) {
       toggleRead()
     } else if (x > 50) {
       settle(80)
-      openRowReset = reset
+      openRow = { id: m.id, reset }
     } else reset()
   }
   const click = () => {
-    if (drag.current?.moved) return
-    if (x !== 0) return reset()
+    if (justDragged.current) return
+    if (x !== 0 || tapClose.current) {
+      tapClose.current = false
+      return reset()
+    }
     if (editing) onSelect()
     else onOpen()
   }
@@ -516,7 +526,8 @@ function remindMe(m: MailMessage) {
 function MessageView({ id, highlight }: { id: string; highlight?: string }) {
   const nav = useNav()
   const m = useOS((s) => s.mails.find((x) => x.id === id))
-  const thread = useOS((s) => (m ? s.mails.filter((x) => x.id !== m.id && (x.thread === id || (m.thread && (x.id === m.thread || x.thread === m.thread)))).sort((a, b) => a.ts - b.ts) : []))
+  const allMails = useOS((s) => s.mails)
+  const thread = useMemo(() => (m ? allMails.filter((x) => x.id !== m.id && (x.thread === id || (!!m.thread && (x.id === m.thread || x.thread === m.thread)))).sort((a, b) => a.ts - b.ts) : []), [allMails, m, id])
   const events = useOS((s) => s.events)
   const vips = useMailLocal((s) => s.vips)
   const [ready, setReady] = useState(false)
@@ -572,7 +583,7 @@ function MessageView({ id, highlight }: { id: string; highlight?: string }) {
   const doSummarize = () => {
     setSumming(true)
     window.setTimeout(() => {
-      setSummary(summarize(m.body.replace(/^(hi|hello|dear|hey|team)[^,\n]*,?\s*/i, '')))
+      setSummary(mailSummary(m))
       setSumming(false)
     }, 500)
   }
@@ -586,7 +597,12 @@ function MessageView({ id, highlight }: { id: string; highlight?: string }) {
       { label: 'Archive', icon: <Archive size={18} />, separatorBefore: true, onSelect: () => { moveMail([m.id], 'archive'); useOS.getState().showToast('Archived', 'archive'); nav.pop() } },
       { label: 'Move to Junk', icon: <ShieldAlert size={18} />, onSelect: () => { moveMail([m.id], 'junk'); nav.pop() } },
     ])
-  const replies = smartReplies(m.body.split('\n').filter(Boolean).slice(-4).join(' '), contactFor(m.from.email)?.id)
+  const replies =
+    f?.kind === 'reservation' ? ['Thank you, see you then!', 'Could we move it to 7:30?', 'We need to cancel, sorry.']
+    : f?.kind === 'order' ? ['Thanks for the update!', 'Can I change the delivery address?', 'Where is my package?']
+    : f?.kind === 'flight' ? ['Thanks!', 'Can I change my seat?', 'Is a checked bag included?']
+    : contactFor(m.from.email)?.tone === 'teacher' ? ['Thank you, I’ll be there.', 'Got it, thanks for the reminder!', 'I have a conflict, can we talk?']
+    : smartReplies(m.body.replace(/\n+/g, ' '), contactFor(m.from.email)?.id)
   const bodyParas = m.body.split('\n')
   return (
     <Page

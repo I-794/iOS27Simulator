@@ -87,6 +87,13 @@ export default function CameraApp() {
     return () => window.clearInterval(iv)
   }, [recStart])
 
+  // Leaving Camera or locking the phone ends the recording and saves the clip, as on iPhone
+  const stopRef = useRef<() => void>(() => {})
+  const away = useOS((s) => s.openApp !== 'camera' || s.locked)
+  useEffect(() => {
+    if (away && recStart !== null) stopRef.current()
+  }, [away, recStart])
+
   // Lens switch crossfade
   const lastLens = useRef(lensIndex(zoom))
   useEffect(() => {
@@ -182,6 +189,7 @@ export default function CameraApp() {
     flyIn(id)
   }
 
+  stopRef.current = () => stopRecording()
   const stopRecording = () => {
     if (recStart === null) return
     const secs = Math.max(1, Math.round((Date.now() - recStart) / 1000))

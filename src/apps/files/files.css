@@ -1,0 +1,62 @@
+/* Files (prefix: fl-) */
+.fl-root { --fl-viewer-bg: #e9e9ee; }
+.ios[data-theme='dark'] .fl-root { --fl-viewer-bg: #111113; }
+.fl-tab { position: absolute; inset: 0; }
+.fl-tab[hidden] { display: none; }
+.fl-root .list { margin-left: calc(var(--safe-left) + 16px); margin-right: calc(var(--safe-right) + 16px); }
+.fl-root .list-header { padding-left: calc(var(--safe-left) + 32px); }
+.fl-search, .fl-seg { padding: 2px calc(var(--safe-right) + 16px) 12px calc(var(--safe-left) + 16px); }
+.fl-loc { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: #fff; }
+.fl-loc.icloud { background: linear-gradient(180deg, #5ac8fa, #007aff); }
+.fl-loc.phone { background: #8e8e93; }
+.fl-loc.trash { background: #8e8e93; }
+.fl-ficon { color: var(--accent); flex-shrink: 0; }
+.fl-tagdot { display: inline-block; width: 14px; height: 14px; border-radius: 7px; flex-shrink: 0; }
+.fl-tagdot.sm { width: 8px; height: 8px; margin-left: 5px; vertical-align: middle; }
+.fl-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 12px; padding: 4px calc(var(--safe-right) + 16px) 10px calc(var(--safe-left) + 16px); }
+.screen.landscape .fl-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.fl-item { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; text-align: center; color: var(--label-primary); }
+.fl-item b { font: 500 13px/16px var(--font-text); margin-top: 6px; max-width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+.fl-item small { font: var(--t-caption2); color: var(--label-secondary); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fl-thumb { position: relative; width: 78px; height: 96px; display: flex; align-items: flex-end; justify-content: center; }
+.fl-thumb .pvd-thumb { width: 74px; }
+.fl-thumb.k-image .pvd-thumb, .fl-thumb.k-cad .pvd-thumb, .fl-thumb.k-sheet .pvd-thumb, .fl-thumb.k-csv .pvd-thumb, .fl-thumb.k-key .pvd-thumb { width: 88px; }
+.fl-thumb .pvd-page { border-radius: 4px; }
+.fl-share-badge { position: absolute; right: -2px; bottom: -4px; width: 22px; height: 22px; border-radius: 11px; background: var(--accent); color: #fff; display: grid; place-items: center; box-shadow: 0 0 0 2px var(--system-background); }
+.fl-folder-ic { position: relative; color: #5ac8fa; height: 96px; display: flex; align-items: center; }
+.fl-folder-ic svg { stroke: #3aa7e8; }
+.fl-folder-shared { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); color: #fff; stroke: #fff !important; }
+.fl-mini { width: 34px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.fl-mini .pvd-thumb { width: 32px; }
+.fl-sharedline { color: var(--accent); }
+.fl-foot { text-align: center; font: var(--t-footnote); color: var(--label-secondary); padding: 16px 0 24px; }
+.fl-avatars { display: inline-flex; vertical-align: middle; }
+.fl-avatars .avatar + .avatar { margin-left: -6px; box-shadow: 0 0 0 1.5px var(--secondary-grouped-background); }
+.fl-collab-line { display: inline-flex; align-items: center; gap: 6px; }
+.fl-request { display: flex; gap: 12px; margin: 0 calc(var(--safe-right) + 16px) 14px calc(var(--safe-left) + 16px); padding: 14px; border-radius: 24px; background: var(--secondary-grouped-background); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--accent) 45%, transparent); }
+.fl-collab .fl-request { margin-left: 16px; margin-right: 16px; }
+.fl-request-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fl-request-body b { font: var(--t-headline); }
+.fl-request-body small { font: var(--t-footnote); color: var(--label-secondary); }
+.fl-request-actions { display: flex; gap: 8px; margin-top: 10px; }
+.fl-request-actions button { flex: 1; height: 38px; border-radius: 19px; font: 600 15px/1 var(--font-text); }
+.fl-request-actions .deny { background: var(--fill-secondary); color: var(--label-primary); }
+.fl-request-actions .ok { background: var(--accent); color: #fff; }
+.fl-collab-banner { display: flex; align-items: center; gap: 10px; width: calc(100% - 32px - var(--safe-left) - var(--safe-right)); margin: 4px calc(var(--safe-right) + 16px) 12px calc(var(--safe-left) + 16px); padding: 10px 14px; border-radius: 20px; background: var(--secondary-grouped-background); text-align: left; color: var(--label-primary); }
+.fl-collab-banner > span:not(.fl-avatars) { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.fl-collab-banner .fl-avatars .avatar + .avatar { box-shadow: 0 0 0 1.5px var(--secondary-grouped-background); }
+.fl-collab-banner b { font: 600 15px/20px var(--font-text); }
+.fl-collab-banner small { font: var(--t-footnote); color: var(--label-secondary); }
+.fl-collab-banner svg { color: var(--label-tertiary); }
+.fl-viewer { padding: 0 calc(var(--safe-right) + 16px) 0 calc(var(--safe-left) + 16px); max-width: 640px; margin: 0 auto; }
+.fl-viewer-bar { position: absolute; left: calc(var(--safe-left) + 20px); right: calc(var(--safe-right) + 20px); bottom: calc(var(--safe-bottom) - 8px); display: flex; justify-content: space-between; z-index: 45; }
+.fl-circle { position: relative; width: 48px; height: 48px; border-radius: 24px; display: grid; place-items: center; color: var(--accent); }
+.fl-circle.shared { color: #fff; background: var(--accent); }
+.fl-badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--red); color: #fff; font: 600 11px/18px var(--font-text); font-style: normal; text-align: center; }
+.fl-info-hero { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 20px 16px; text-align: center; }
+.fl-info-hero b { font: var(--t-headline); margin-top: 6px; }
+.fl-info-hero small { font: var(--t-footnote); color: var(--label-secondary); }
+.fl-collab { padding-bottom: 30px; }
+.fl-collab-start { display: flex; flex-direction: column; gap: 10px; padding: 0 16px 16px; }
+.fl-role { width: 32px; height: 32px; border-radius: 16px; display: grid; place-items: center; background: var(--fill-tertiary); color: var(--label-secondary); }
+.fl-addp { width: 34px; height: 34px; border-radius: 17px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }

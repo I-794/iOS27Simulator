@@ -47,7 +47,7 @@ const useFM = create<FMLocal>()(persist((set) => ({
 
 const HOME: Pt = { x: 240, y: 620 }
 const DEVICE_PT: Record<string, Pt> = { iphone: HERE, airpods: { x: HERE.x + 6, y: HERE.y + 4 }, ipad: HOME, mac: { x: HOME.x + 12, y: HOME.y - 8 } }
-const ITEM_PT: Record<string, Pt> = { keys: { x: HOME.x - 10, y: HOME.y + 6 }, backpack: { x: 548, y: 292 }, percbag: { x: 590, y: 280 }, collar: { x: 226, y: 650 } }
+const ITEM_PT: Record<string, Pt> = { keys: { x: HOME.x - 30, y: HOME.y - 8 }, backpack: { x: 548, y: 292 }, percbag: { x: 590, y: 280 }, collar: { x: HOME.x + 34, y: HOME.y + 46 } }
 const DEVICE_ICON: Record<string, (s: number) => ReactNode> = {
   iphone: (s) => <Smartphone size={s} />, airpods: (s) => <Headphones size={s} />, ipad: (s) => <Tablet size={s} />, mac: (s) => <Monitor size={s} />,
 }

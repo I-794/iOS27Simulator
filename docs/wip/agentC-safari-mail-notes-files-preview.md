@@ -1,91 +1,64 @@
 # Agent C handoff: Safari, Mail, Notes, Files, Preview
 
-Status as of this stop: **Safari is done and verified. Mail is written, type-checks and renders, but has had only a smoke test. Notes, Files and Preview are still placeholders.** Preview has a shared document renderer that Mail already uses.
+Status: **all five apps are built and have been checked with screenshots** in portrait, landscape and dark mode.
+- `npx tsc -p tsconfig.app.json --noEmit | grep -E 'src/apps/(safari|mail|notes|files|preview)'` reports no errors.
+- A smoke run across all five apps printed no console errors.
+- No shared files were edited and no dependencies were added.
 
-`npx tsc -p tsconfig.app.json --noEmit | grep -E 'src/apps/(safari|mail|notes|files|preview)'` reports no errors.
-No shared files were edited. No dependencies were added.
+## Safari (`src/apps/safari/`): done (see the earlier version of this note in git history for the full feature list)
+- Built-in demo sites, bottom glass bar, tab overview with Organize by Topic, tab groups, Notify Me, Describe an Extension, Reader with summary and Listen, translate, zoom, Find on Page, Start Page.
+- Screen Time "Ask to Browse" flow, landscape top bar, onscreen page text for Siri.
+- Routes: `url/`, `search/`, `newtab`.
 
-## Safari (`src/apps/safari/`): done, verified with screenshots
-- `model.ts`
-  - URL helpers: `normalizeInput`, `resolve`, `searchUrl`, `isBlocked`.
-  - Local persisted store `ios27-safari`: bookmarks, reading list, extra tab groups, active group, per-host zoom, reader prefs, cart, hidden Start Page sections.
-  - Per-tab back/forward is kept for the session only.
-  - Tab actions, `organizeByTopic()`, and `askPermission()` for Screen Time. Approval arrives after 4.5 s and updates `approvedSites` and `pendingRequests`, then sends a notification.
-- `web.tsx`: page primitives.
-  - `A` handles in-app links and `Jump` handles anchors.
-  - `D` marks dates (`.sf-date`) and `Price` marks prices (`.sf-price`).
-  - `Ad` renders `.sf-ad`, and `useWatch` reads Notify Me watches.
-- `sites1.tsx` and `sites2.tsx`: every `SAFARI_SITES` entry is a real page, plus the "Search" results page and the Screen Time restricted page.
-  - Covered pages: weather, radar, chemistry, Lincoln calendar (Add to Calendar), headphones, SBC kit, forum, parts store, news, music, GameZone, VideoTube.
-- `pages.tsx`: URL-to-component map, the Notify Me `WATCHABLE` table, and the word-level Spanish translator (DOM text nodes).
-- `extensions.ts`: Describe an Extension. It turns a prompt into CSS plus a manifest using rules, and `scopeCss` scopes the CSS to `.sf-webview`.
-- `index.tsx`: the browser.
-  - Bottom glass bar, which collapses on scroll. Swipe the pill to switch tabs. It becomes a top bar in landscape.
-  - aA page menu: zoom, Reader, Listen, Translate, Notify Me, Find, extension toggles, Describe and Manage, Hide Toolbar, Privacy Report.
-  - ··· menu: Share, Copy Link, Bookmark, Favorites, Reading List, Library, Find, New Tab, Tabs.
-  - Address editing with suggestions (Top Hit, completions, bookmarks and history, sites, On This Page).
-  - Find on Page uses CSS Highlights. Reader view has AI summary, read-along Listen and themes.
-  - Start Page shows the real load time in ms. It has an Edit sheet.
-  - Tab overview: live thumbnails, swipe or X to close, a context menu for moving tabs between groups, and Organize by Topic with an animated reflow.
-  - Tab group menu with New Empty Tab Group.
-  - Sheets: Library (Bookmarks, Reading List, History, Watching), Notify Me, Extensions, Privacy/Performance.
-  - Onscreen awareness sends `{type:'page', url, title, text}`, where text is the `.sf-main` innerText.
-  - Routes: `url/<u>` opens the tab that already has the URL, or a new tab. `search/<q>` is URI-decoded. `newtab`.
-- Known quirks:
-  - Playwright typing at 10 ms per key can drop characters in the Find field. Human-speed typing is fine.
-  - The translator is word-level, so the Spanish is intentionally rough.
+## Mail (`src/apps/mail/`): done and verified today
+Fixes made today:
+- MessageView had a zustand selector that returned a new array on every render, which caused an infinite loop. It is now computed with `useMemo`.
+- Swipe actions: releasing a swipe no longer snaps the row shut (a `justDragged` guard). Tapping an open row now closes it instead of opening the message.
+- AI summaries now come from the email's structured facts through `mailSummary()` in `model.ts`, used for both previews and the Summarize card.
+- Smart Reply chips are context-aware: reservation, order, flight, and a respectful tone for teachers.
+- Landscape now respects the side safe areas.
 
-## Mail (`src/apps/mail/`): code complete, only lightly tested
-- `model.ts`
-  - Local store `ios27-mail` holds VIP emails and the chosen category.
-  - Mailbox filters, priority detection, AI preview summaries, `whenFromFacts`, move/patch/delete helpers.
-  - Cleanup needed: `findExistingEvent` currently matches by start time only (the title check is dead code, `|| true`).
-- `index.tsx`
-  - The Mailboxes root pushes Inbox on mount.
-  - Inbox:
-    - Category chips (Primary, Transactions, Updates, Promotions, All Mail) with unread dots.
-    - Priority section, rows with unread dot, VIP star, clip and flag icons, and 2-line AI summaries.
-    - Swipe actions: right for read/unread; left for More, Flag and Archive/Trash, with full swipe archiving. Right-click opens a menu.
-    - Select mode with Mark, Move, Flag and Trash. Unread filter, and a bottom glass bar with search and compose.
-  - Search: suggestions for people (from:) and subjects (subject:), Top Hits from `search(q,{types:['mail']})`, a boost for VIP and unread mail, highlighted matches, a mailbox scope toggle, and a 120 ms skeleton.
-  - Message view:
-    - 120 ms skeleton, marks the message read, `useOnscreen('mail', subject, {type:'mail', mailId})`.
-    - Summarize card for long mails.
-    - Suggestion chips: Directions → maps `route/rosas`; Add to Calendar from `facts.when` (shows In Calendar and opens the event); for flights, Calendar plus Wallet `card/w-boarding`; Track Package opens a sheet that can start or stop the `delivery-bolt` Live Activity.
-    - Attachment sheet renders the PDF through `preview/docs` and has Open in Preview (`preview` route `file/<id>`).
-    - Smart Reply chips pre-fill a reply. Thread stubs link replies to the original. A Move sheet is included.
-  - Compose sheet:
-    - To field with contact suggestions, Cc, Subject, body (`data-mail="1"`, `data-recipient`), and attachments.
-    - Send adds the mail to Sent, then shows a 5 s Undo Send banner.
-    - Cancel offers Save Draft or Delete Draft. Tapping a draft reopens it.
-  - Routes: `mail/<id>` and `compose/<subject>`.
-- Next steps:
-  - Screenshot the message view, compose, search, swipe and edit mode, dark mode and landscape.
-  - Verify the `mail/<id>` route timing (it uses popToRoot followed by pushes).
+Checked with screenshots: Inbox, Priority section, category chips, swipe actions, select mode, message view with suggestion buttons, Summarize, Smart Reply and compose, the attachment sheet rendering the itinerary PDF, search with suggestions and Top Hits, dark mode, landscape.
 
-## Preview (`src/apps/preview/`)
-- `docs.tsx` and `docs.css` (class prefix `pvd-`) are done.
-  - `DocPages`, `DocThumb`, `pagesFor`, `fileById`, `fileByName`, `pageCount`.
-  - Paper mockups for every FILES entry: rules PDF, worksheet, concert program, itinerary, sheet music, scanned permission slip, Pages lab report, Numbers budget, HEIC image, CAD model.
-- `index.tsx` is **still a placeholder**. To do:
-  - Browse/Recents list, `file/<id>` route, scan (Camera route `scan` or a simulated scan).
-  - Markup overlay (pen and highlighter SVG over each page, using `DocPages renderOverlay`).
-  - Export as PDF showing "Saved in 0.2 s".
-  - A formats list (PDF, images, EPUB, RTF, Markdown, CSV, Keynote/Pages) with simple renderers for a sample `.md` and `.csv`.
+## Notes (`src/apps/notes/`): new today
+- `index.tsx`:
+  - Folders page: search across every note, iCloud folders, a shared Robotics folder with collaborator avatars, Recently Deleted, a Shared section, and a New Folder sheet.
+  - Note list: search, Pinned section, date sections, drawing/photo thumbnails, and a context menu (Pin, Copy as Markdown, Move, Share, Delete).
+  - Editor:
+    - Menu: Summarize (built from the note's structure), Copy as Markdown (sheet plus clipboard), Paste Markdown (sheet with live preview, inserts into the note or makes a new one), Export .md, Pin, Move, Lock, Delete.
+    - Section links jump to the heading and flash it. A link picker sheet adds new links.
+    - Empty notes are removed after you leave them. This is deferred so React StrictMode's double mount doesn't delete a brand-new note.
+    - `useOnscreen('notes', title, {type:'note', title, text})`. Route `note/<id>`.
+- `editor.tsx`: the block editor.
+  - Each block is an auto-sizing textarea, so the simulated keyboard and Write with Siri work.
+  - Enter splits the block or continues the list. Backspace at the start merges into the previous block or converts the block back to body text.
+  - Blocks: checklists you tap to toggle, bullets, dividers, code, quotes, editable tables (add/remove rows and columns, delete table), drawings (sheet with pens, highlighter, undo, clear), photos stored as `![alt](scene:<key>)` paragraphs, section links.
+  - Formatting toolbar that sits above the keyboard: Aa styles (Title/Heading/Subheading/Body/Monostyled plus list, checklist, quote), checklist, table, divider, section link, attach photo, draw, done.
+- `markdown.ts`: `toMarkdown` / `fromMarkdown`. Headings keep their ids as `{#id}`, checklists as `- [ ]`, tables as pipe tables, links as `[text](#id)`.
 
-## Notes (`src/apps/notes/`): not started (placeholder)
-To do:
-- Folders (Notes, School, Robotics, Band, Shared), a list with a pinned section and search.
-- Editor that renders every NoteBlock, with section links using `scrollIntoView` to heading `id`s.
-- Editing: use **textarea/input** per block, not contentEditable, because the simulated keyboard only attaches to input and textarea.
-- Aa toolbar, checklist, table, divider, drawing canvas, photo.
-- Copy as Markdown and a Paste Markdown sheet, a Summarize note action, `useOnscreen('notes', ...)`, and the `note/<id>` route.
+## Files (`src/apps/files/`): new today
+- Floating tab bar with Recents, Shared and Browse; each tab has its own NavStack.
+- Browse: Locations (iCloud Drive folders, On My iPhone holding the extra-format samples, Recently Deleted), Favorites, colour tags, search.
+- Icon/list view toggle and sorting, both persisted (`ios27-files`).
+- File viewer renders through `preview/docs` and hides the tab bar while open.
+  - Collaboration banner, for example "Shared by Alex · 3 people".
+  - Info sheet.
+  - Collaborate sheet: people and roles, invite, link access (invited / anyone can view / anyone can edit), Copy Link, Stop Sharing.
+- Access request: "Nora Kim requested access to Robot Budget 2026" with Approve or Deny, shown on the Shared tab and in the Collaborate sheet. Approving adds Nora as an editor.
+- Route `file/<id>`.
 
-## Files (`src/apps/files/`): not started (placeholder)
-To do:
-- Browse, Recents and Shared tabs; locations; grid/list toggle.
-- Preview through `DocPages` from `../preview/docs`.
-- Collaboration labels ("Shared by Alex · 3 people"), the pending access request "Nora requested access to Robot Budget 2026" with Approve/Deny, the collaboration link sheet, and the `file/<id>` route.
+## Preview (`src/apps/preview/`): new today
+- `docs.tsx`: now also exports `EXTRA_FILES` and `ALL_FILES`. It renders Markdown, a sortable CSV, EPUB book pages, RTF and a Keynote slide grid.
+- `index.tsx`:
+  - Home: Scan Documents and Open File tiles, Recents, and a "More formats in iOS 27" list with sample files.
+  - Viewer: page indicator, Markup with pen, highlighter, eraser (tap a stroke), undo and 4 colours; strokes are saved per document in `ios27-preview`.
+  - Export as PDF: options, then a progress bar, then "Saved in 0.2 s" with an iOS 26 vs iOS 27 speed bar.
+  - Info sheet.
+  - Simulated scanner: auto-capture, shutter, save. Saved scans appear in Recents.
+  - Routes: `file/<id>`, `markup/<id>` (Files uses this for its Markup button), `scan`.
 
-## Shared-file notes (no changes made)
-- `tests/shot.mjs`: `locator('.screen').screenshot` timed out late in the session even though `.screen` exists and `page.screenshot()` works. This is probably caused by a shell change from another agent. The workaround is a full-page screenshot.
+## Known issues / notes
+- Playwright typing at 10 ms per key can drop characters. This appears to be caused by the simulated keyboard's per-keystroke re-render; it is fine at human speed.
+- Section-link jumps can only scroll as far as the note's length allows.
+- Markup coordinates on non-letter pages (images, sheets) are slightly stretched because of `preserveAspectRatio="none"`.
+- Files' `useOnscreen` uses an entity `type: 'file'`, which Siri's onscreen handling doesn't understand yet (harmless).

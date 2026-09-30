@@ -403,7 +403,7 @@ export const useOS = create<OSState>()(
 
       unlock: () => {
         set({ locked: false, screenOn: true, overlay: null, lastUnlock: now() })
-        get().flashIsland({ kind: 'faceid', duration: 900 })
+        get().flashIsland({ kind: 'faceid', icon: 'unlock', duration: 900 })
       },
       lock: () => {
         set({ locked: true, overlay: null, openApp: null, siriActive: false, editingHome: false, keyboardOpen: false })

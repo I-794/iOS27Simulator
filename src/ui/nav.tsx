@@ -2,6 +2,7 @@ import { createContext, useContext, useLayoutEffect, useRef, useState, useCallba
 import { ChevronLeft, Search } from 'lucide-react'
 import { springs, animateSpring, reducedMotion } from '../os/spring'
 import { useDrag } from '../os/hooks'
+import { useOS } from '../os/store'
 
 // ======================= Navigation stack =======================
 
@@ -283,11 +284,18 @@ export function TabBar<T extends string>({ tabs, value, onChange, onSearch, mini
   const [pill, setPill] = useState({ x: 0, w: 0 })
   const idx = tabs.findIndex((t) => t.id === value)
   const visibleTabs = minimized ? tabs.filter((t) => t.id === value) : tabs
+  const orientation = useOS((s) => s.orientation)
   useLayoutEffect(() => {
-    const btns = ref.current?.querySelectorAll('button')
-    const b = btns?.[minimized ? 0 : idx] as HTMLElement | undefined
-    if (b) setPill({ x: b.offsetLeft, w: b.offsetWidth })
-  }, [idx, minimized, tabs.length])
+    const measure = () => {
+      const btns = ref.current?.querySelectorAll('button')
+      const b = btns?.[minimized ? 0 : idx] as HTMLElement | undefined
+      if (b) setPill({ x: b.offsetLeft, w: b.offsetWidth })
+    }
+    measure()
+    // the bar changes size when rotating or minimizing — re-measure once it settles
+    const t = window.setTimeout(measure, 450)
+    return () => window.clearTimeout(t)
+  }, [idx, minimized, tabs.length, orientation])
   return (
     <div className="tabbar-wrap">
       <div className={`tabbar glass ${minimized ? 'min' : ''}`} ref={ref} role="tablist">

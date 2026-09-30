@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { useOS } from '../../os/store'
 import { CONTACTS } from '../../os/data/people'
 import type { MailMessage, CalendarEvent } from '../../os/types'
-import { startOfDay, DAY, HOUR, MIN } from '../../os/time'
+import { startOfDay, DAY, HOUR, MIN, fmtDate, fmtTime } from '../../os/time'
 import { summarize } from '../../os/ai/writing'
 
 export type Box = 'inbox' | 'vip' | 'flagged' | 'drafts' | 'sent' | 'archive' | 'junk' | 'trash' | 'unread' | 'attachments'
@@ -57,6 +57,26 @@ export function contactFor(email: string) {
   return CONTACTS.find((c) => c.emails.includes(email))
 }
 
+/** Apple Intelligence-style summary: uses structured facts when available, else sentence extraction. */
+export function mailSummary(m: MailMessage): string {
+  const f = m.facts
+  const when = whenFromFacts(f?.when)
+  const at = when ? `${when - Date.now() > 6 * DAY ? fmtDate(when, 'monthDay') : fmtDate(when, 'weekday')} at ${fmtTime(when)}` : ''
+  if (f?.kind === 'reservation') return `Your table for ${f.party} at ${m.from.name} is confirmed for ${at}${f.location ? `, ${f.location.split(',')[0]}` : ''}. Call to change plans.`
+  if (f?.kind === 'order') return `Order ${f.order} has shipped via Parcel Express and should arrive ${f.eta}. Tracking ${f.tracking}.`
+  if (f?.kind === 'flight') return `Flight ${f.flight} from Maple Grove to Seattle is booked for four passengers (confirmation ${f.confirmation}, seat ${f.seat}). Check-in opens 24 hours before.`
+  if (f?.kind === 'event' && /robot/i.test(m.subject)) return `The robotics build meeting moves to ${at} in Room 114. Bring laptops, safety glasses and your build log; regionals are five weeks away.`
+  if (f?.kind === 'event') return `${f.title} call time is ${at} in the band room; the concert starts an hour later. Black concert attire, percussion loaded by 6:15.`
+  const text = m.body
+    .replace(/^(hi|hello|dear|hey|team)[^,\n]*,?\s*/i, '')
+    .split('\n')
+    .map((l) => l.replace(/^[•\-–]\s*/, '').trim())
+    .filter(Boolean)
+    .map((l) => (/[.!?:]$/.test(l) ? l : l + '.'))
+    .join(' ')
+  return summarize(text)
+}
+
 const cache = new Map<string, string>()
 /** Apple Intelligence summary used in place of the plain preview for longer mails. */
 export function previewFor(m: MailMessage): { text: string; ai: boolean } {
@@ -65,7 +85,7 @@ export function previewFor(m: MailMessage): { text: string; ai: boolean } {
   if (body.length < 140 || m.folder === 'sent' || m.folder === 'drafts') return { text: body, ai: false }
   let s = cache.get(m.id)
   if (!s) {
-    s = summarize(m.body.replace(/^(hi|hello|dear|hey)[^,\n]*,?\s*/i, ''))
+    s = mailSummary(m)
     cache.set(m.id, s)
   }
   return { text: s, ai: true }
