@@ -639,3 +639,17 @@
 .ios[data-theme='light'] .siri-overlay.has-turns .siri-user { color: var(--label-primary); text-shadow: none; }
 .screen[data-overlay='switcher'] .app-layer { opacity: 0; transition: opacity 0.2s; }
 .screen[data-overlay='switcher'] .home.behind-app { opacity: 1; filter: blur(18px); transform: scale(1.05); }
+/* Liquid Glass refraction (Chromium supports SVG filters in backdrop-filter) */
+@supports (backdrop-filter: url(#x)) {
+  .ios:not([data-reduce-transparency='true']) .dock,
+  .ios:not([data-reduce-transparency='true']) .tabbar {
+    -webkit-backdrop-filter: url(#lg-refract) saturate(var(--glass-saturate)) brightness(1.04);
+    backdrop-filter: url(#lg-refract) saturate(var(--glass-saturate)) brightness(1.04);
+  }
+}
+.vo-cursor { position: absolute; z-index: 985; border: 3px solid #000; outline: 2px solid #fff; border-radius: 10px; pointer-events: none; transition: all 0.18s var(--spring-snappy); }
+.vo-caption { position: absolute; left: 12px; right: 12px; bottom: 30px; z-index: 986; background: rgb(0 0 0 / 0.85); color: #fff; border-radius: 14px; padding: 10px 14px; font: 500 14px/19px var(--font-text); pointer-events: none; }
+.vo-caption b { color: #64d2ff; margin-right: 6px; }
+/* Prevent the browser from programmatically scrolling clipped containers
+   (focus / scrollIntoView would otherwise shift pages sideways). */
+.screen, .home-pages, .app-window, .nav-stack, .app-root, .lock, .page { overflow: clip; }

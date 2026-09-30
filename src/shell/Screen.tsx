@@ -17,6 +17,7 @@ import { OverlayHost } from '../ui/overlay'
 import { Wallpaper } from '../art/Wallpaper'
 import { installKeyboardShortcuts } from './actions'
 import { startServices } from './services'
+import { VoiceOverHost } from './VoiceOver'
 
 export function Screen({ width, height, fullscreen }: { width: number; height: number; fullscreen: boolean }) {
   const theme = useOS((s) => s.theme)
@@ -77,6 +78,7 @@ export function Screen({ width, height, fullscreen }: { width: number; height: n
       data-overlay={overlay ?? undefined}
       style={style}
     >
+      <GlassFilters />
       <div className="layer-wallpaper">
         <Wallpaper id={wallpaper} dark={theme === 'dark'} />
       </div>
@@ -95,6 +97,7 @@ export function Screen({ width, height, fullscreen }: { width: number; height: n
       <OverlayHost />
       <Toast />
       <VolumeHUD />
+      <VoiceOverHost />
       {nightShift && <div className="nightshift-veil" />}
       <div className="brightness-veil" style={{ opacity: Math.max(0, 0.85 - brightness) * 0.8 }} />
       <div className={`screen-off ${screenOn ? '' : 'on'}`} onClick={() => useOS.getState().set({ screenOn: true })} aria-hidden={screenOn} />
@@ -122,5 +125,23 @@ function TopEdgeGestures() {
       <div className="edge-zone edge-nc" onPointerDown={ncDrag} aria-hidden />
       <div className="edge-zone edge-cc" onPointerDown={ccDrag} aria-hidden />
     </>
+  )
+}
+
+const H_MAP = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" preserveAspectRatio="none"><defs><linearGradient id="h"><stop offset="0" stop-color="rgb(230,0,0)"/><stop offset=".03" stop-color="rgb(185,0,0)"/><stop offset=".08" stop-color="rgb(145,0,0)"/><stop offset=".14" stop-color="rgb(128,0,0)"/><stop offset=".86" stop-color="rgb(128,0,0)"/><stop offset=".92" stop-color="rgb(111,0,0)"/><stop offset=".97" stop-color="rgb(71,0,0)"/><stop offset="1" stop-color="rgb(26,0,0)"/></linearGradient></defs><rect width="100" height="100" fill="url(#h)"/></svg>')}`
+const V_MAP = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" preserveAspectRatio="none"><defs><linearGradient id="v" x2="0" y2="1"><stop offset="0" stop-color="rgb(0,230,0)"/><stop offset=".06" stop-color="rgb(0,185,0)"/><stop offset=".16" stop-color="rgb(0,145,0)"/><stop offset=".28" stop-color="rgb(0,128,0)"/><stop offset=".72" stop-color="rgb(0,128,0)"/><stop offset=".84" stop-color="rgb(0,111,0)"/><stop offset=".94" stop-color="rgb(0,71,0)"/><stop offset="1" stop-color="rgb(0,26,0)"/></linearGradient></defs><rect width="100" height="100" fill="url(#v)"/></svg>')}`
+
+/** Edge-lens displacement used by Liquid Glass surfaces to refract what's behind them. */
+function GlassFilters() {
+  return (
+    <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden>
+      <filter id="lg-refract" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+        <feImage href={H_MAP} x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="h" />
+        <feImage href={V_MAP} x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="v" />
+        <feComposite in="h" in2="v" operator="arithmetic" k2="1" k3="1" result="map" />
+        <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+        <feDisplacementMap in="blur" in2="map" scale="20" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
   )
 }

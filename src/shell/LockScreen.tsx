@@ -127,7 +127,7 @@ function LockContent({ locked }: { locked: boolean }) {
   }
 
   return (
-    <div className={`lock-inner ${landscape ? 'landscape' : ''} ${top ? 'clock-top' : ''}`} onPointerDown={onPointerDown} style={{ transform: dragY ? `translateY(${dragY * 0.6}px)` : undefined, opacity: dragY ? 1 + dragY / 600 : 1 }}>
+    <div className={`lock-inner ${landscape ? 'landscape' : ''} ${top ? 'clock-top' : ''}`} onPointerDown={onPointerDown} onContextMenu={(e) => { if (locked && !(e.target as HTMLElement).closest('.notif')) { e.preventDefault(); setCustomizing(true) } }} style={{ transform: dragY ? `translateY(${dragY * 0.6}px)` : undefined, opacity: dragY ? 1 + dragY / 600 : 1 }}>
       <div className="lock-wallpaper">
         <Wallpaper id={st.wallpaper} dark={st.theme === 'dark'} blur={!locked ? 30 : 0} />
         {!locked && <div className="nc-dim" />}
