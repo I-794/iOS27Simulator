@@ -126,7 +126,11 @@ export function KeyboardHost() {
       }, 60)
     }
     const onInput = (e: Event) => {
-      if (isField(e.target)) setText(e.target.value)
+      if (isField(e.target)) {
+        const v = e.target.value
+        setText(v)
+        setShift((sh) => (sh === 'lock' ? sh : v === '' || /[.!?]\s$/.test(v) ? 'on' : 'off'))
+      }
     }
     screen.addEventListener('focusin', onIn)
     screen.addEventListener('focusout', onOut)
@@ -152,7 +156,6 @@ export function KeyboardHost() {
       let out = ch
       if (mode === 'abc' && shift !== 'off') out = ch.toUpperCase()
       insert(field, out)
-      if (shift === 'on') setShift('off')
       if (mode !== 'abc' && ch === "'") setMode('abc')
     },
     [field, mode, shift],

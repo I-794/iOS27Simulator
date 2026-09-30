@@ -99,7 +99,7 @@ export function Slider({ value, onChange, min = 0, max = 1, step, left, right, c
 }
 
 /** Tall Control Center style slider (fills from the bottom). */
-export function BigSlider({ value, onChange, icon, label, width = 70, height = 150, radius = 30, className = '' }: {
+export function BigSlider({ value, onChange, icon, label, width, height, radius, className = '' }: {
   value: number
   onChange: (v: number) => void
   icon: ReactNode

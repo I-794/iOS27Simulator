@@ -623,7 +623,7 @@ export function startTimer(seconds: number, label = 'Timer') {
   return id
 }
 
-function doSend(d: { to?: string; body: string; app: 'messages' | 'mail'; subject?: string }) {
+export function doSend(d: { to?: string; body: string; app: 'messages' | 'mail'; subject?: string }) {
   const st = S()
   if (d.app === 'mail') {
     const c = d.to ? contactById(d.to) : undefined

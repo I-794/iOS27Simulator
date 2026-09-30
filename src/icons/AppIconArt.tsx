@@ -437,6 +437,7 @@ export const AppIconArt = memo(function AppIconArt({ app, size = 60, style = 'de
   return (
     <div
       className={`app-icon-art style-${style}`}
+      data-app={app}
       style={{ width: size, height: size, background: bg, ['--tint' as string]: tint, ...(vars as React.CSSProperties) }}
       aria-hidden
     >

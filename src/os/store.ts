@@ -226,24 +226,27 @@ interface OSState {
 const DEFAULT_HOME: HomeItem[][] = [
   [
     { type: 'widget', id: 'w1', kind: 'weather', size: 'm' },
-    { type: 'widget', id: 'w2', kind: 'calendar', size: 's' },
-    { type: 'widget', id: 'w3', kind: 'photos', size: 's' },
     { type: 'app', id: 'facetime' }, { type: 'app', id: 'calendar' }, { type: 'app', id: 'photos' }, { type: 'app', id: 'camera' },
     { type: 'app', id: 'mail' }, { type: 'app', id: 'clock' }, { type: 'app', id: 'maps' }, { type: 'app', id: 'weather' },
     { type: 'app', id: 'reminders' }, { type: 'app', id: 'notes' }, { type: 'app', id: 'siri' }, { type: 'app', id: 'home' },
     { type: 'app', id: 'wallet' }, { type: 'app', id: 'health' }, { type: 'app', id: 'podcasts' }, { type: 'app', id: 'settings' },
   ],
   [
-    { type: 'widget', id: 'w4', kind: 'music', size: 'm' },
+    { type: 'widget', id: 'w2', kind: 'calendar', size: 's' },
+    { type: 'widget', id: 'w3', kind: 'photos', size: 's' },
     { type: 'app', id: 'playground' }, { type: 'app', id: 'shortcuts' }, { type: 'app', id: 'findmy' }, { type: 'app', id: 'freeform' },
     { type: 'app', id: 'journal' }, { type: 'app', id: 'fitness' }, { type: 'app', id: 'passwords' }, { type: 'app', id: 'files' },
     { type: 'app', id: 'news' }, { type: 'app', id: 'stocks' }, { type: 'app', id: 'contacts' }, { type: 'app', id: 'calculator' },
     { type: 'folder', id: 'f-utilities', name: 'Utilities', apps: ['magnifier', 'preview', 'games'] },
-    { type: 'widget', id: 'w5', kind: 'batteries', size: 's' },
-    { type: 'widget', id: 'w6', kind: 'reminders', size: 's' },
   ],
   [
     { type: 'widget', id: 'w7', kind: 'siri', size: 'xl' },
+  ],
+  [
+    { type: 'widget', id: 'w4', kind: 'music', size: 'm' },
+    { type: 'widget', id: 'w5', kind: 'batteries', size: 's' },
+    { type: 'widget', id: 'w6', kind: 'reminders', size: 's' },
+    { type: 'widget', id: 'w8', kind: 'home', size: 'm' },
   ],
 ]
 
@@ -563,8 +566,12 @@ export const useOS = create<OSState>()(
     }),
     {
       name: 'ios27-sim',
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => localStorage),
+      migrate: (persisted, version) => {
+        const p = (persisted ?? {}) as Partial<OSState>
+        return (version < 4 ? { ...p, homePages: DEFAULT_HOME } : p) as OSState
+      },
       partialize: (s) => {
         const {
           openApp, launchRect, appRoutes, routeNonce, overlay, banner, toast, shareRequest, editingHome, keyboardOpen,

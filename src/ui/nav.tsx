@@ -46,8 +46,25 @@ export function NavStack({ root, grouped, onDepthChange }: { root: ReactNode; gr
   const replaceTop = useCallback((el: ReactNode) => setStack((s) => (s.length === 1 ? s : [...s.slice(0, -1), { ...s[s.length - 1], el }])), [])
   const remove = useCallback((key: string) => setStack((s) => s.filter((e) => e.key !== key)), [])
 
+  // Escape / hardware "back" pops the stack of the foreground app
+  const rootRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const onBack = (e: Event) => {
+      if (e.defaultPrevented || depth === 0) return
+      const el = rootRef.current
+      if (!el || !el.closest('.app-window.active')) return
+      // only the innermost visible stack handles it
+      if (el.querySelector('.nav-stack .nav-page:not([aria-hidden="true"]) .nav-stack')) return
+      e.preventDefault()
+      pop()
+    }
+    window.addEventListener('ios-back', onBack)
+    return () => window.removeEventListener('ios-back', onBack)
+  }, [depth, pop])
+
+
   return (
-    <div className="nav-stack">
+    <div className="nav-stack" ref={rootRef}>
       {stack.map((entry, i) => {
         const liveIndex = live.indexOf(entry)
         const covered = entry.status !== 'exit' && liveIndex < live.length - 1
