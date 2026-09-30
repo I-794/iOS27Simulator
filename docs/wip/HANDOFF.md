@@ -41,7 +41,7 @@ Each agent owns a set of app folders and writes its notes to a `docs/wip/agentX-
    - Home camera search
    - AirPods EQ
    - alarm volume in Clock
-6. Run the final iOS 27 feature-gap audit against `docs/wip/ios27-research.md`, if the research pass finished.
+6. Run the final iOS 27 feature-gap audit. The background research pass was stopped before it saved anything, so redo it quickly first (MacRumors "Apple Releases iOS 27", "50 New Things", Apple newsroom).
 
 ## Useful tools
 - `node tests/shot.mjs <name> '<steps-json>'` takes screenshots, with `SHOT_DIR` and `URL` set as environment variables.
