@@ -55,4 +55,6 @@ Each agent owns a set of app folders and writes its notes to a `docs/wip/agentX-
 ## Agent status at pause
 - **A:** Messages and Contacts are done. Phone is partial (its store and Call Context logic are written; the screens aren't). FaceTime is not started.
 - **E:** Siri app, Shortcuts and Image Playground are done. Journal and Freeform are not started.
-- **B, C, D, F, G:** see their notes in `docs/wip/` (still wrapping up when this was written).
+- **B:** Photos is done. Camera is not started; only `camera/actions.ts` (`runVisionAction`) exists.
+- **D:** Settings is done; it keeps extra preferences in its own `ios27-settings` store. Passwords is not started.
+- **C, F, G:** see their notes in `docs/wip/`.
