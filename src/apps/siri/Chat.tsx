@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowUp, Mic, Plus, X, Copy, Share, RotateCcw, Volume2, ThumbsUp, ThumbsDown, MoreHorizontal, SquarePen, Pin, PinOff, Pencil, Trash2,
-  Image as ImageIcon, ScanEye, PenLine, Sparkles, ChevronDown, Check, MessageCircle, CloudSun, Plane, Car, House, Camera, Workflow, Square,
+  Image as ImageIcon, ScanEye, PenLine, Sparkles, ChevronDown, Check, MessageCircle, CloudSun, Plane, Car, House, Camera, Workflow, Square, FileText,
 } from 'lucide-react'
 import { Page, useNav } from '../../ui/nav'
-import { Glass } from '../../ui/controls'
+import { Glass, Segmented } from '../../ui/controls'
 import { openMenu, Sheet } from '../../ui/overlay'
 import { useOS } from '../../os/store'
 import { dayLabel, fmtTime, HOUR } from '../../os/time'
@@ -17,6 +17,8 @@ import { Orb, HeroOrb, Waveform } from './Orb'
 import { useSiriLocal, freshTurns } from './local'
 import { RenameSheet, deleteConversation, shareConversation, togglePin, setProvider } from './helpers'
 import { WritingSheet } from './Writing'
+import { siriDocs, docById, isAboutDoc, runDocSiri, type SiriDoc } from './docs'
+import { DocThumb } from '../preview/docs'
 
 const THINK_STEPS: [RegExp, string][] = [
   [/\b(alex|said|text|message|mom|dad|sam|priya)\b/i, 'Searching Messages'],
@@ -42,18 +44,23 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
   const conv = useOS((s) => s.siriConversations.find((c) => c.id === cid))
   const provider = useOS((s) => s.siriSettings.provider)
   const attachments = useSiriLocal((s) => s.attachments)
+  const docs = useSiriLocal((s) => s.docs) ?? {}
   const [text, setText] = useState('')
   const [pending, setPending] = useState<string | null>(null)
   const [listening, setListening] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [attach, setAttach] = useState<string | null>(null)
+  const [attachDoc, setAttachDoc] = useState<string | null>(null)
   const [attachOpen, setAttachOpen] = useState(false)
+  const [attachTab, setAttachTab] = useState<'Photos' | 'Files'>('Photos')
+  const [pendingDoc, setPendingDoc] = useState<string | null>(null)
   const [writingOpen, setWritingOpen] = useState(false)
   const [renameOpen, setRenameOpen] = useState(false)
   const [, force] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const lastPhoto = useRef<string | null>(null)
+  const lastDoc = useRef<string | null>(null)
   const busy = useRef(false)
   const turns = conv?.turns ?? []
 
@@ -67,7 +74,9 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
   // restore the image context for continued conversations
   useEffect(() => {
     const withPhoto = [...turns].reverse().find((t) => attachments[t.id])
-    if (withPhoto) lastPhoto.current = attachments[withPhoto.id]
+    const withDoc = [...turns].reverse().find((t) => attachments[t.id] || docs[t.id])
+    if (withDoc && docs[withDoc.id]) lastDoc.current = docs[withDoc.id]
+    else if (withPhoto) lastPhoto.current = attachments[withPhoto.id]
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cid])
 
@@ -76,7 +85,7 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conv?.id])
 
-  const send = async (raw: string, opts: { voice?: boolean; photoId?: string | null } = {}) => {
+  const send = async (raw: string, opts: { voice?: boolean; photoId?: string | null; docId?: string | null } = {}) => {
     const q = raw.trim()
     if (!q || busy.current) return
     busy.current = true
@@ -87,22 +96,33 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
       setCid(id)
     }
     const photoId = opts.photoId ?? null
-    if (photoId) lastPhoto.current = photoId
+    const docId = opts.docId ?? null
+    if (photoId) { lastPhoto.current = photoId; lastDoc.current = null }
+    if (docId) { lastDoc.current = docId; lastPhoto.current = null }
     const ctxPhoto = photoId ?? lastPhoto.current
     const photo = ctxPhoto ? st.photos.find((p) => p.id === ctxPhoto) : undefined
+    const ctxDoc = docById(docId ?? lastDoc.current)
+    // an uploaded document answers anything asked with it, and follow-ups that are about it
+    const docTurn = ctxDoc && (docId || isAboutDoc(q, ctxDoc)) ? ctxDoc : undefined
     useOS.setState({
-      siriOnscreen: photo
-        ? { app: 'photos', context: 'Viewing photo', entity: { type: 'photo', photoId: photo.id, scene: photo.scene } }
-        : { app: 'siri', context: undefined },
+      siriOnscreen: ctxDoc
+        ? { app: 'files', context: `Viewing ${ctxDoc.file.name}`, entity: { type: 'note', title: ctxDoc.file.name, text: ctxDoc.text } }
+        : photo
+          ? { app: 'photos', context: 'Viewing photo', entity: { type: 'photo', photoId: photo.id, scene: photo.scene } }
+          : { app: 'siri', context: undefined },
     })
     setText('')
     setAttach(null)
+    setAttachDoc(null)
     setPending(q)
-    const answeredBy = useOS.getState().siriSettings.provider
-    const p = runSiri(q, { convId: id, voice: opts.voice })
+    setPendingDoc(docTurn?.file.name ?? null)
+    const answeredBy = docTurn ? 'siri' : useOS.getState().siriSettings.provider
+    const p = docTurn ? runDocSiri(q, docTurn, id, opts.voice) : runSiri(q, { convId: id, voice: opts.voice })
     const afterUser = useOS.getState().siriConversations.find((c) => c.id === id)
     const userTurn = afterUser?.turns[afterUser.turns.length - 1]
-    if (photoId && userTurn) useSiriLocal.getState().set({ attachments: { ...useSiriLocal.getState().attachments, [userTurn.id]: photoId } })
+    const loc0 = useSiriLocal.getState()
+    if (photoId && userTurn) loc0.set({ attachments: { ...loc0.attachments, [userTurn.id]: photoId } })
+    if (docId && userTurn) loc0.set({ docs: { ...(loc0.docs ?? {}), [userTurn.id]: docId } })
     await p
     const done = useOS.getState().siriConversations.find((c) => c.id === id)
     const reply = done?.turns[done.turns.length - 1]
@@ -113,6 +133,7 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
     }
     busy.current = false
     setPending(null)
+    setPendingDoc(null)
     window.setTimeout(() => {
       const s = useOS.getState()
       if (!s.siriActive && s.siriMode !== 'thinking') s.set({ siriMode: 'idle' })
@@ -156,7 +177,7 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
         window.setTimeout(() => {
           setListening(false)
           setTranscript('')
-          send(phrase, { voice: true, photoId: attach })
+          send(phrase, { voice: true, photoId: attach, docId: attachDoc })
         }, 380)
       }
     }, 120)
@@ -174,13 +195,14 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
     if (u < 0) return
     const userTurn = c.turns[u]
     const photoId = attachments[userTurn.id] ?? null
+    const docId = docs[userTurn.id] ?? null
     st.set({ siriConversations: st.siriConversations.map((x) => (x.id === c.id ? { ...x, turns: x.turns.filter((_t, i) => i < u || i > idx) } : x)) })
-    send(userTurn.text, { photoId })
+    send(userTurn.text, { photoId, docId })
   }
 
   const moreMenu = (el: HTMLElement) =>
     openMenu(el, [
-      { label: 'New Chat', icon: <SquarePen size={18} />, onSelect: () => { stopListening(); setCid(null); lastPhoto.current = null; setAttach(null) } },
+      { label: 'New Chat', icon: <SquarePen size={18} />, onSelect: () => { stopListening(); setCid(null); lastPhoto.current = null; lastDoc.current = null; setAttach(null); setAttachDoc(null) } },
       { label: conv?.pinned ? 'Unpin' : 'Pin', icon: conv?.pinned ? <PinOff size={18} /> : <Pin size={18} />, disabled: !conv, onSelect: () => conv && togglePin(conv.id) },
       { label: 'Rename', icon: <Pencil size={18} />, disabled: !conv, onSelect: () => setRenameOpen(true) },
       { label: 'Share Conversation', icon: <Share size={18} />, disabled: !conv, onSelect: () => conv && shareConversation(conv) },
@@ -195,7 +217,8 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
 
   const plusMenu = (el: HTMLElement) =>
     openMenu(el, [
-      { label: 'Photos', icon: <ImageIcon size={18} />, onSelect: () => setAttachOpen(true) },
+      { label: 'Photos', icon: <ImageIcon size={18} />, onSelect: () => { setAttachTab('Photos'); setAttachOpen(true) } },
+      { label: 'Files', icon: <FileText size={18} />, onSelect: () => { setAttachTab('Files'); setAttachOpen(true) } },
       { label: 'Visual Intelligence', icon: <ScanEye size={18} />, onSelect: () => useOS.getState().launch('camera', { route: 'siri' }) },
       { label: 'Writing Tools', icon: <PenLine size={18} />, onSelect: () => setWritingOpen(true) },
       { label: 'Create Image', icon: <Sparkles size={18} />, onSelect: () => useOS.getState().launch('playground') },
@@ -205,6 +228,9 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
   const follow = !pending && lastSiri?.followUps?.length && turns[turns.length - 1]?.id === lastSiri.id ? lastSiri.followUps : []
   const photoFor = (id: string | null) => (id ? useOS.getState().photos.find((p) => p.id === id) : undefined)
   const attachPhoto = photoFor(attach)
+  const attachDocObj = docById(attachDoc)
+  const ctxDocObj = attachDocObj ?? docById(lastDoc.current)
+  const fallbackQ = attach ? 'What is this?' : attachDoc ? 'Summarize this document' : ''
 
   return (
     <Page
@@ -239,7 +265,7 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
                 <>
                   <div className="t-caption1 secondary" style={{ margin: '6px 4px 6px' }}>Say something like…</div>
                   <div className="siriapp-say">
-                    {(attach || lastPhoto.current ? ['What is this?', 'When was this taken?'] : []).concat(SIRI_SUGGESTIONS.slice(0, 5)).slice(0, 5).map((s) => (
+                    {(ctxDocObj ? ['Summarize this document', ...ctxDocObj.suggestions] : attach || lastPhoto.current ? ['What is this?', 'When was this taken?'] : []).concat(SIRI_SUGGESTIONS.slice(0, 5)).slice(0, 5).map((s) => (
                       <button key={s} onClick={() => speakPhrase(s)}>“{s}”</button>
                     ))}
                   </div>
@@ -254,22 +280,28 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
                   <button aria-label="Remove attachment" onClick={() => setAttach(null)}><X size={12} strokeWidth={3} /></button>
                 </div>
               )}
+              {attachDocObj && (
+                <div className="siriapp-attach-doc anim-pop">
+                  <DocChip doc={attachDocObj} />
+                  <button aria-label="Remove document" onClick={() => setAttachDoc(null)}><X size={12} strokeWidth={3} /></button>
+                </div>
+              )}
               <div className="row gap8">
                 <button className="siriapp-plus glass interactive" aria-label="Add" onClick={(e) => plusMenu(e.currentTarget)}><Plus size={22} /></button>
                 <Glass className="siriapp-inputbar grow" variant="heavy">
                   <input
                     ref={inputRef}
                     className="siriapp-input"
-                    placeholder={attach ? 'Ask about this photo…' : provider === 'chatgpt' ? 'Ask Siri or ChatGPT…' : 'Ask Siri…'}
+                    placeholder={attach ? 'Ask about this photo…' : attachDoc ? 'Ask about this document…' : ctxDocObj ? `Ask about “${ctxDocObj.file.name.replace(/\.\w+$/, '')}”…` : provider === 'chatgpt' ? 'Ask Siri or ChatGPT…' : 'Ask Siri…'}
                     value={text}
                     onChange={(e) => setText(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && send(text || (attach ? 'What is this?' : ''), { photoId: attach })}
+                    onKeyDown={(e) => e.key === 'Enter' && send(text || fallbackQ, { photoId: attach, docId: attachDoc })}
                     enterKeyHint="send"
                     aria-label="Message Siri"
                     data-dictation="What is this?|Which day did Alex say the robotics meeting was?|Add it to my calendar"
                   />
-                  {text.trim() || attach ? (
-                    <button className="siriapp-send" aria-label="Send" onClick={() => send(text || 'What is this?', { photoId: attach })}><ArrowUp size={18} strokeWidth={3} /></button>
+                  {text.trim() || attach || attachDoc ? (
+                    <button className="siriapp-send" aria-label="Send" onClick={() => send(text || fallbackQ, { photoId: attach, docId: attachDoc })}><ArrowUp size={18} strokeWidth={3} /></button>
                   ) : (
                     <button className="siriapp-mic" aria-label="Talk to Siri" onClick={startListening}><Mic size={20} /></button>
                   )}
@@ -285,15 +317,22 @@ export function ChatPage({ convId, ask, voice }: { convId?: string; ask?: string
         {turns.length === 0 && !pending && <Hero onAsk={(q) => send(q)} onWrite={() => setWritingOpen(true)} onAttach={() => setAttachOpen(true)} listening={listening} />}
         {turns.map((t, i) =>
           t.role === 'user' ? (
-            <UserBubble key={t.id} t={t} photoId={attachments[t.id]} />
+            <UserBubble key={t.id} t={t} photoId={attachments[t.id]} docId={docs[t.id]} />
           ) : (
             <SiriMessage key={t.id} t={t} last={i === turns.length - 1} onRegenerate={() => regenerate(t.id)} onSend={send} onStream={() => scrollDown(false)} onDone={() => force((n) => n + 1)} />
           ),
         )}
-        {pending && <Thinking q={pending} />}
+        {pending && <Thinking q={pending} doc={pendingDoc} />}
       </div>
 
-      <AttachSheet open={attachOpen} onClose={() => setAttachOpen(false)} onPick={(id) => { setAttach(id); setAttachOpen(false); window.setTimeout(() => inputRef.current?.focus(), 350) }} />
+      <AttachSheet
+        open={attachOpen}
+        tab={attachTab}
+        onTab={setAttachTab}
+        onClose={() => setAttachOpen(false)}
+        onPick={(id) => { setAttach(id); setAttachDoc(null); setAttachOpen(false); window.setTimeout(() => inputRef.current?.focus(), 350) }}
+        onPickDoc={(id) => { setAttachDoc(id); setAttach(null); setAttachOpen(false); window.setTimeout(() => inputRef.current?.focus(), 350) }}
+      />
       <WritingSheet open={writingOpen} onClose={() => setWritingOpen(false)} />
       <RenameSheet conv={conv} open={renameOpen} onClose={() => setRenameOpen(false)} />
     </Page>
@@ -347,10 +386,29 @@ function Hero({ onAsk, onWrite, onAttach, listening }: { onAsk: (q: string) => v
 }
 
 // ---------------------------------------------------------------- messages
-function UserBubble({ t, photoId }: { t: SiriTurn; photoId?: string }) {
+function DocChip({ doc, onClick }: { doc: SiriDoc; onClick?: () => void }) {
+  const body = (
+    <>
+      <DocThumb file={doc.file} className="siriapp-doc-thumb" />
+      <span className="siriapp-doc-meta">
+        <b>{doc.file.name}</b>
+        <small>{doc.meta} · {doc.file.size}</small>
+      </span>
+    </>
+  )
+  return onClick ? (
+    <button className="siriapp-doc pressable" onClick={onClick} aria-label={`Open ${doc.file.name}`}>{body}</button>
+  ) : (
+    <div className="siriapp-doc">{body}</div>
+  )
+}
+
+function UserBubble({ t, photoId, docId }: { t: SiriTurn; photoId?: string; docId?: string }) {
   const photo = useOS((s) => (photoId ? s.photos.find((p) => p.id === photoId) : undefined))
+  const doc = docById(docId)
   return (
     <div className="siriapp-user anim-up">
+      {doc && <DocChip doc={doc} onClick={() => useOS.getState().launch('files', { route: `file/${doc.file.id}` })} />}
       {photo && (
         <button className="siriapp-user-photo" onClick={() => useOS.getState().launch('photos', { route: `photo/${photo.id}` })} aria-label={photo.description}>
           <Scene scene={photo.scene} />
@@ -430,8 +488,8 @@ function SiriMessage({ t, last, onRegenerate, onSend, onStream, onDone }: { t: S
   )
 }
 
-function Thinking({ q }: { q: string }) {
-  const step = THINK_STEPS.find(([re]) => re.test(q))?.[1] ?? 'Thinking'
+function Thinking({ q, doc }: { q: string; doc?: string | null }) {
+  const step = doc ? `Reading “${doc}”` : THINK_STEPS.find(([re]) => re.test(q))?.[1] ?? 'Thinking'
   const [phase, setPhase] = useState(0)
   useEffect(() => {
     const t = window.setTimeout(() => setPhase(1), 450)
@@ -447,20 +505,44 @@ function Thinking({ q }: { q: string }) {
 }
 
 // ---------------------------------------------------------------- attach
-function AttachSheet({ open, onClose, onPick }: { open: boolean; onClose: () => void; onPick: (id: string) => void }) {
+function AttachSheet({ open, tab, onTab, onClose, onPick, onPickDoc }: { open: boolean; tab: 'Photos' | 'Files'; onTab: (t: 'Photos' | 'Files') => void; onClose: () => void; onPick: (id: string) => void; onPickDoc: (id: string) => void }) {
   const photos = useOS((s) => s.photos)
   const list = useMemo(() => photos.filter((p) => !p.hidden && !p.idDocument && p.kind !== 'video').sort((a, b) => b.ts - a.ts).slice(0, 36), [photos])
+  const files = useMemo(() => siriDocs(), [])
   return (
-    <Sheet open={open} onClose={onClose} title="Photos" detent="large">
-      <div className="t-footnote secondary" style={{ padding: '0 18px 10px' }}>Choose a photo to ask Siri about. Recent · {list.length} items</div>
-      <div className="siriapp-grid">
-        {list.map((p) => (
-          <button key={p.id} onClick={() => onPick(p.id)} aria-label={p.description} className="pressable">
-            <Scene scene={p.scene} />
-            {p.ts > Date.now() - 48 * HOUR && <span className="siriapp-new-dot" />}
-          </button>
-        ))}
+    <Sheet open={open} onClose={onClose} title={tab === 'Photos' ? 'Photos' : 'Files'} detent="large">
+      <div style={{ padding: '0 16px 12px' }}>
+        <Segmented options={['Photos', 'Files'] as const} value={tab} onChange={onTab} />
       </div>
+      {tab === 'Photos' ? (
+        <>
+          <div className="t-footnote secondary" style={{ padding: '0 18px 10px' }}>Choose a photo to ask Siri about. Recent · {list.length} items</div>
+          <div className="siriapp-grid">
+            {list.map((p) => (
+              <button key={p.id} onClick={() => onPick(p.id)} aria-label={p.description} className="pressable">
+                <Scene scene={p.scene} />
+                {p.ts > Date.now() - 48 * HOUR && <span className="siriapp-new-dot" />}
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="t-footnote secondary" style={{ padding: '0 18px 10px' }}>Choose a document from iCloud Drive. Siri can summarize it or answer questions about it, privately on device.</div>
+          <div className="list siriapp-files">
+            {files.map((d) => (
+              <button key={d.file.id} className="row-item pressable-row has-icon siriapp-file-row" onClick={() => onPickDoc(d.file.id)} aria-label={`Attach ${d.file.name}`}>
+                <DocThumb file={d.file} className="siriapp-file-thumb" />
+                <span className="row-main">
+                  <span className="row-title">{d.file.name}</span>
+                  <span className="row-sub">{d.file.folder} · {d.meta} · {d.file.size}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="t-footnote tertiary" style={{ padding: '10px 18px 40px' }}>Documents you add stay in this conversation. Siri doesn’t keep a copy.</div>
+        </>
+      )}
     </Sheet>
   )
 }

@@ -1,6 +1,7 @@
 /** Row-level search entries so Settings search finds individual switches, not just pages. */
 export const EXTRA_INDEX: { title: string; route: string; keywords: string }[] = [
   { title: 'Airplane Mode', route: 'root', keywords: 'airplane flight offline' },
+  { title: 'AirPlay Video in CarPlay', route: 'general/carplay', keywords: 'carplay airplay video car parked' },
   { title: 'Connectivity Assist', route: 'cellular', keywords: 'handoff wifi cellular seamless drop' },
   { title: 'Wi‑Fi Quality Demo', route: 'cellular', keywords: 'wifi quality slider handoff' },
   { title: 'Data Roaming', route: 'cellular', keywords: 'roaming travel' },

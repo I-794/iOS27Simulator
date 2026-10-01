@@ -5,6 +5,8 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 interface SiriLocal {
   /** user turn id → attached photo id */
   attachments: Record<string, string>
+  /** user turn id → attached document (Files id) */
+  docs: Record<string, string>
   /** siri turn id → provider that answered */
   providers: Record<string, 'siri' | 'chatgpt'>
   /** siri turn id → answered by voice */
@@ -15,7 +17,7 @@ interface SiriLocal {
 
 export const useSiriLocal = create<SiriLocal>()(
   persist(
-    (set) => ({ attachments: {}, providers: {}, voiced: {}, seeded: false, set: (p) => set(p) }),
+    (set) => ({ attachments: {}, docs: {}, providers: {}, voiced: {}, seeded: false, set: (p) => set(p) }),
     { name: 'ios27-siri', storage: createJSONStorage(() => localStorage), partialize: ({ set: _s, ...rest }) => { void _s; return rest } },
   ),
 )

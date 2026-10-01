@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Settings as Gear, Info, RefreshCw, HardDrive, Keyboard, Globe, CalendarClock, Smartphone, ListChecks, Gamepad2, RotateCcw, Share, ChevronDown, ArrowLeftRight, Check, Plus, Trash2, Languages, Sparkles, PhoneCall } from 'lucide-react'
+import { Settings as Gear, Info, RefreshCw, HardDrive, Keyboard, Globe, CalendarClock, Smartphone, ListChecks, Gamepad2, RotateCcw, Share, ChevronDown, ArrowLeftRight, Check, Plus, Trash2, Languages, Sparkles, PhoneCall, Car } from 'lucide-react'
 import { List, Row } from '../../../ui/list'
 import { Spinner, Button } from '../../../ui/controls'
 import { showAlert, Sheet } from '../../../ui/overlay'
@@ -25,6 +25,7 @@ function GeneralPage() {
       <List>
         <Push icon={<Ico c="#007aff" i={Share} />} title="AirDrop" detail={airdrop === 'off' ? 'Receiving Off' : airdrop === 'contacts' ? 'Contacts Only' : 'Everyone for 10 Minutes'} page={() => <AirDropPage />} />
         <Go icon={<Ico c="#34c759" i={ArrowLeftRight} />} to="general/handoff" title="iPhone Handoff" />
+        <Go icon={<Ico c="#34c759" i={Car} />} to="general/carplay" title="CarPlay" />
       </List>
       <List>
         <Go icon={<Ico c="#8e8e93" i={CalendarClock} />} to="general/datetime" title="Date & Time" />

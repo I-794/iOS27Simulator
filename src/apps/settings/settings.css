@@ -41,6 +41,12 @@
 .stg-pill { height: 30px; padding: 0 12px; border-radius: 99px; font: var(--t-subhead); font-weight: 600; }
 .stg-pill.approve { background: var(--green); color: #fff; }
 .stg-pill.deny { background: var(--fill-tertiary); color: var(--red); }
+.stg-req { align-items: flex-start; padding-top: 10px; padding-bottom: 12px; }
+.stg-req .stg-site-ico { margin-top: 2px; }
+.stg-req-main { display: flex; flex-direction: column; align-items: flex-start; text-align: left; width: 100%; min-width: 0; }
+.stg-req-main .row-title { word-break: break-all; }
+.stg-req-actions { margin-top: 8px; max-width: 340px; }
+.stg-req-actions .stg-pill { flex: 1; }
 .stg-site-ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: linear-gradient(160deg, #64d2ff, #0a84ff); color: #fff; font-weight: 700; flex-shrink: 0; }
 .stg-move { width: 26px; height: 26px; border-radius: 7px; font-size: 10px; color: var(--label-secondary); background: var(--fill-quaternary); }
 .stg-move:disabled { opacity: 0.25; }
@@ -436,3 +442,22 @@
 .stg-glass-tick { position: absolute; left: calc(50% + 0px); top: 3px; width: 2px; height: 22px; margin-left: -1px; border-radius: 1px; background: var(--label-tertiary); pointer-events: none; }
 .ios[data-theme='dark'] .stg-root .settings-icon[style*='rgb(28, 28, 30)'] { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22); }
 .ios.landscape .stg-gp-search { display: none; }
+
+/* ---------- CarPlay (General › CarPlay) ---------- */
+.stg-carplay { margin: 0 16px 22px; }
+.stg-carplay-screen { position: relative; aspect-ratio: 16 / 7; border-radius: 22px; overflow: hidden; background: #0b0b0f; box-shadow: 0 0 0 6px #1c1c1e, 0 8px 24px rgb(0 0 0 / 0.25); margin: 6px 6px 16px; }
+.stg-carplay-video { position: absolute; inset: 0; background: linear-gradient(160deg, #1f3b73, #6e3bd8 55%, #ff6a3d); }
+.stg-carplay-video i { position: absolute; border-radius: 50%; background: rgb(255 255 255 / 0.18); filter: blur(2px); }
+.stg-carplay-video i:nth-child(1) { width: 38%; aspect-ratio: 1; left: 8%; top: 20%; }
+.stg-carplay-video i:nth-child(2) { width: 22%; aspect-ratio: 1; left: 58%; top: 8%; }
+.stg-carplay-video i:nth-child(3) { width: 30%; aspect-ratio: 1; left: 66%; top: 52%; }
+.stg-carplay-screen.playing .stg-carplay-video i { animation: stg-carplay-drift 4s ease-in-out infinite alternate; }
+@keyframes stg-carplay-drift { to { transform: translate(14%, 10%) scale(1.1); } }
+.stg-carplay-paused { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0 24px; text-align: center; color: #fff; background: rgb(0 0 0 / 0.62); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.stg-carplay-paused b { font: 600 17px/22px var(--font-text); }
+.stg-carplay-paused span { font: 13px/17px var(--font-text); color: rgb(255 255 255 / 0.75); }
+.stg-carplay-bar { position: absolute; left: 10px; bottom: 10px; display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 13px; background: rgb(0 0 0 / 0.45); color: #fff; font: 600 12px/1 var(--font-text); }
+.stg-carplay-dot { width: 7px; height: 7px; border-radius: 4px; background: #34c759; }
+.stg-carplay-dash { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4%; align-content: center; padding: 0 8%; }
+.stg-carplay-dash i { aspect-ratio: 1; border-radius: 24%; }
+.stg-carplay .stg-pad { padding-left: 0; padding-right: 0; }

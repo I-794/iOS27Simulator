@@ -165,6 +165,7 @@ export const SETTINGS_INDEX: { title: string; route: string; keywords: string }[
   { title: 'General', route: 'general', keywords: 'general about software update storage' },
   { title: 'Keyboards', route: 'general/keyboard', keywords: 'keyboard multilingual grammar autocorrect punctuation dictation emoji' },
   { title: 'Language & Region', route: 'general/language', keywords: 'language region english variants indigenous' },
+  { title: 'CarPlay', route: 'general/carplay', keywords: 'carplay car airplay video parked family' },
   { title: 'iPhone Handoff', route: 'general/handoff', keywords: 'two iphones same phone number switch handoff' },
   { title: 'Feature Availability', route: 'general/availability', keywords: 'regional feature availability languages countries' },
   { title: 'Apple Account', route: 'account', keywords: 'apple account icloud recovery contact recovery key' },

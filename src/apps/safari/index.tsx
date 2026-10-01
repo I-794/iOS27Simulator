@@ -221,7 +221,7 @@ function Browser({ onTabs, onSheet, onLibrary, hidden }: { onTabs: () => void; o
           <div className="sf-webview" ref={webRef} style={{ zoom }} key={`${tab?.id}-${url}`}>
             {extCss && <style>{extCss}</style>}
             {blocked ? (
-              <RestrictedPage host={host} onAsk={() => askPermission(host)} />
+              <RestrictedPage host={host} onAsk={(reason) => askPermission(host, reason)} />
             ) : r.kind === 'start' ? (
               <StartPage onPrivacy={() => onSheet('privacy')} onLibrary={onLibrary} onEdit={() => onSheet('startedit')} />
             ) : (

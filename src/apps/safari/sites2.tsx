@@ -5,6 +5,8 @@ import { Scene } from '../../art/Scene'
 import { AlbumArt } from '../../shell/widgets/AlbumArt'
 import { A, Ad, D, Price, Stars, relDay, useWatch, useWeb } from './web'
 import { useSafari, searchUrl } from './model'
+import { showAlert } from '../../ui/overlay'
+import { ASK_REASONS, approveInPerson } from '../messages/askToBrowse'
 
 // =============================== Bolt Electronics ===============================
 function BoltHeader() {
@@ -633,25 +635,60 @@ export function VideoTubeSite() {
 }
 
 // =============================== Screen Time restricted page ===============================
-export function RestrictedPage({ host, onAsk }: { host: string; onAsk: () => void }) {
+export function RestrictedPage({ host, onAsk }: { host: string; onAsk: (reason: string) => void }) {
   const cfg = useOS((s) => s.screenTime)
+  const [compose, setCompose] = useState(false)
+  const [reason, setReason] = useState('')
   const req = [...cfg.pendingRequests].reverse().find((r) => r.site === host)
   const pending = req?.status === 'pending'
   const denied = req?.status === 'denied'
+  const send = () => {
+    onAsk(reason)
+    setCompose(false)
+    setReason('')
+  }
+  const inPerson = () =>
+    showAlert({
+      title: 'Ask in Person',
+      message: `A parent or guardian can enter their Screen Time passcode on this iPhone to allow ${host}.`,
+      actions: [
+        { label: 'Cancel', style: 'cancel' },
+        { label: 'Don’t Allow', style: 'destructive', onPress: () => approveInPerson(host, false) },
+        { label: 'Allow Website', onPress: () => approveInPerson(host, true) },
+      ],
+    })
   return (
     <div className="sf-restricted">
       <div className="sf-restricted-icon"><Hourglass size={34} /></div>
       <h1>Restricted</h1>
       <p>You can’t browse <b>{host}</b> because it is restricted.</p>
       {pending ? (
-        <div className="sf-restricted-wait">
-          <span className="spinner" style={{ width: 18, height: 18 }} /> Waiting for a parent to respond…
+        <>
+          <div className="sf-restricted-wait">
+            <span className="spinner" style={{ width: 18, height: 18 }} /> Waiting for Mom to respond…
+          </div>
+          <button className="sf-restricted-link" onClick={() => useOS.getState().launch('messages', { route: `conv/${useOS.getState().ensureConversation(['mom'])}` })}>View Request in Messages</button>
+        </>
+      ) : compose ? (
+        <div className="sf-restricted-form anim-up">
+          <label htmlFor="sf-ask-reason">Add a note for Mom (optional)</label>
+          <div className="sf-restricted-chips">
+            {ASK_REASONS.map((r) => (
+              <button key={r} className={reason === r ? 'on' : ''} onClick={() => setReason(reason === r ? '' : r)}>{r}</button>
+            ))}
+          </div>
+          <input id="sf-ask-reason" value={reason} onChange={(e) => setReason(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder="Why do you want to visit?" enterKeyHint="send" data-recipient="mom" />
+          <button className="sf-restricted-ask" onClick={send}>Send Request</button>
+          <button className="sf-restricted-link" onClick={() => setCompose(false)}>Cancel</button>
         </div>
       ) : (
-        <button className="sf-restricted-ask" onClick={onAsk}>Ask Permission</button>
+        <>
+          <button className="sf-restricted-ask" onClick={() => setCompose(true)}>Ask Permission</button>
+          <button className="sf-restricted-link" onClick={inPerson}>Ask in Person</button>
+        </>
       )}
-      {denied && <p className="sf-restricted-denied">Your last request was declined.</p>}
-      <small>Screen Time · {cfg.childName}’s iPhone</small>
+      {denied && !pending && <p className="sf-restricted-denied">Your last request was declined.</p>}
+      <small>Screen Time · {cfg.childName}’s iPhone · Requests go to Mom in Messages</small>
     </div>
   )
 }

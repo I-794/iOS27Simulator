@@ -490,6 +490,86 @@ function VpnPage() {
   )
 }
 
+// ------------------------------------------------------------------ CarPlay (General › CarPlay)
+function useCarPlay() {
+  const cp = usePrefs((s) => s.carplay) ?? DEFAULT_CARPLAY
+  const set = (p: Partial<typeof cp>) => usePrefs.getState().setP({ carplay: { ...cp, ...p } })
+  return [cp, set] as const
+}
+const DEFAULT_CARPLAY = { paired: true, whileLocked: true, airplayVideo: true, parked: true }
+
+function CarPlayPage() {
+  const [cp, set] = useCarPlay()
+  const nav = useNav()
+  const pair = () => {
+    set({ paired: true })
+    os().showToast('Connected to Family Car')
+  }
+  return (
+    <HeroPage title="CarPlay" icon={<Ico c="#34c759" i={Car} size={60} />} blurb="Use the apps you love on your car’s display. Connect with a cable, or wirelessly in cars that support it.">
+      <List header="My Cars">
+        {cp.paired ? (
+          <Row icon={<Ico c="#34c759" i={Car} />} title="Family Car" subtitle="Connected · Wireless" chevron onClick={() => nav.push(<CarPage />)} />
+        ) : (
+          <Row title={<span className="secondary">No cars</span>} />
+        )}
+      </List>
+      {!cp.paired && (
+        <List header="Available Cars" footer="Make sure the car is in wireless pairing mode, or connect it with a USB cable.">
+          <Row icon={<Ico c="#8e8e93" i={Car} />} title="Family Car" subtitle="Bluetooth · Wireless CarPlay" trailing={<button className="stg-link" onClick={pair}>Connect</button>} onClick={pair} />
+        </List>
+      )}
+    </HeroPage>
+  )
+}
+
+function CarPage() {
+  const [cp, set] = useCarPlay()
+  const nav = useNav()
+  const playing = cp.airplayVideo && cp.parked
+  const forget = () =>
+    showAlert({
+      title: 'Forget “Family Car”?',
+      message: 'CarPlay will no longer connect to this car automatically.',
+      actions: [
+        { label: 'Cancel', style: 'cancel' },
+        { label: 'Forget', style: 'destructive', onPress: () => { nav.pop(); window.setTimeout(() => set({ paired: false }), 300) } },
+      ],
+    })
+  return (
+    <Sub title="Family Car">
+      <div className="stg-carplay">
+        <div className={`stg-carplay-screen ${playing ? 'playing' : ''}`} aria-label={playing ? 'Car display playing video' : 'Car display showing CarPlay'}>
+          {cp.airplayVideo ? (
+            <>
+              <div className="stg-carplay-video" aria-hidden><i /><i /><i /></div>
+              {!cp.parked && (
+                <div className="stg-carplay-paused">
+                  <b>Video Paused</b>
+                  <span>Video is only available while parked. Audio continues.</span>
+                </div>
+              )}
+              <div className="stg-carplay-bar"><span className="stg-carplay-dot" />{cp.parked ? 'AirPlay · Robotics Highlights' : 'Audio Only · Robotics Highlights'}</div>
+            </>
+          ) : (
+            <div className="stg-carplay-dash" aria-hidden>{['#34c759', '#ff2d55', '#0a84ff', '#ff9500', '#5856d6', '#30b0c7'].map((c) => <i key={c} style={{ background: c }} />)}</div>
+          )}
+        </div>
+        <div className="stg-pad"><Segmented options={['Parked', 'Driving'] as const} value={cp.parked ? 'Parked' : 'Driving'} onChange={(v) => set({ parked: v === 'Parked' })} /></div>
+      </div>
+      <List header={<span className="row gap6">AirPlay Video <New27 /></span>} footer="Stream video from your iPhone to the car’s display with AirPlay. For safety, video plays only while the car is parked — when you shift out of Park, the picture pauses and audio keeps playing.">
+        <Row title="AirPlay Video" toggle={{ value: cp.airplayVideo, onChange: (v) => set({ airplayVideo: v }) }} />
+      </List>
+      <List footer="Allow CarPlay while iPhone is locked, so you don’t need to unlock it when you get in the car.">
+        <Row title="Allow CarPlay While Locked" toggle={{ value: cp.whileLocked, onChange: (v) => set({ whileLocked: v }) }} />
+      </List>
+      <List>
+        <Row destructive title="Forget This Car" onClick={forget} />
+      </List>
+    </Sub>
+  )
+}
+
 export function registerConnectivity() {
   Object.assign(ROUTES, {
     wifi: { title: 'Wi‑Fi', el: () => <WifiPage />, keywords: 'wifi network internet wireless parknet join password ask to join hotspot' },
@@ -497,5 +577,6 @@ export function registerConnectivity() {
     cellular: { title: 'Cellular', el: () => <CellularPage />, keywords: 'cellular mobile data 5g roaming connectivity assist handoff usage' },
     hotspot: { title: 'Personal Hotspot', el: () => <HotspotPage />, keywords: 'hotspot tethering share internet family' },
     vpn: { title: 'VPN', el: () => <VpnPage />, keywords: 'vpn private network' },
+    'general/carplay': { title: 'CarPlay', el: () => <CarPlayPage />, keywords: 'carplay car family car airplay video parked driving wireless', parent: 'general' },
   })
 }
