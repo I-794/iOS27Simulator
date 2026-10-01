@@ -108,3 +108,16 @@ test('timer uses alarm volume and shows a Live Activity', async ({ page }) => {
   await expect.poll(() => os(page, 's.timers.length')).toBe(1)
   await expect.poll(() => os(page, 's.notifications.some((n) => n.app === "clock")'), { timeout: 8000 }).toBe(true)
 })
+
+test('Lock Screen editor: a photo wallpaper can be extended with Apple Intelligence', async ({ page }) => {
+  await boot(page, { unlock: false })
+  await page.locator('.lock').click({ button: 'right', position: { x: 200, y: 300 } })
+  await expect(page.locator('.lock-customizer')).toBeVisible()
+  await page.locator('.lock-customizer').getByRole('button', { name: 'Biscuit at the Beach' }).click()
+  await page.locator('.lock-customizer').getByRole('button', { name: 'Whole Photo' }).click()
+  await expect.poll(() => os(page, 's.wallpaperFit')).toBe('photo')
+  await page.locator('.lock-customizer').getByRole('button', { name: 'Extend with Apple Intelligence' }).click()
+  await expect.poll(() => os(page, 's.wallpaperFit')).toBe('extend')
+  await page.locator('.lock-customizer').getByRole('button', { name: /Create with Image Playground/ }).click()
+  await expect(page.locator('.app-window.active[data-app="playground"]')).toBeVisible()
+})

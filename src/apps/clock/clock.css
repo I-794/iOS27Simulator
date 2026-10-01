@@ -1,6 +1,6 @@
 .clk-root { background: var(--system-background); }
 .clk-tab { position: absolute; inset: 0; visibility: hidden; opacity: 0; transition: opacity 0.18s; }
-.clk-tab.on { visibility: visible; opacity: 1; }
+.clk-tab.on { visibility: inherit; opacity: 1; }
 
 .clk-section-h { display: flex; align-items: center; gap: 8px; padding: 18px 20px 8px; font: var(--t-title3); letter-spacing: 0.38px; }
 

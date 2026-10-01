@@ -57,7 +57,8 @@ interface OSState {
   glassTint: number
   wallpaper: string
   lockClockPosition: 'center' | 'top'
-  lockExtend: boolean
+  /** How a photo wallpaper fills the screen: cropped, whole photo, or extended with Apple Intelligence */
+  wallpaperFit: 'fill' | 'photo' | 'extend'
   lockClockStyle: 'bold' | 'rounded' | 'serif' | 'stencil'
   lockClockColor: string
   lockProfile: string
@@ -287,7 +288,7 @@ const DEFAULTS = {
   glassTint: 0.5,
   wallpaper: 'sequoia',
   lockClockPosition: 'center' as const,
-  lockExtend: false,
+  wallpaperFit: 'fill' as 'fill' | 'photo' | 'extend',
   lockClockStyle: 'bold' as const,
   lockClockColor: '#ffffff',
   lockProfile: 'Default',

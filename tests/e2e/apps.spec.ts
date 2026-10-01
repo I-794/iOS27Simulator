@@ -138,3 +138,27 @@ test('Camera: leaving mid-recording saves the clip', async ({ page }) => {
   await expect.poll(() => os(page, 's.photos.length')).toBe(before + 1)
   expect(await os(page, 's.photos.slice().sort((a, b) => b.ts - a.ts)[0].kind')).toBe('video')
 })
+
+test('Every app launches cleanly and leaves nothing painted after closing', async ({ page }) => {
+  test.setTimeout(120_000)
+  const errors = await boot(page)
+  const src = (await import('node:fs')).readFileSync('src/apps/registry.ts', 'utf8')
+  const ids = [...src.matchAll(/^\s+(\w+): lazy\(/gm)].map((m) => m[1])
+  expect(ids.length).toBeGreaterThan(25)
+  const leaks: string[] = []
+  for (const id of ids) {
+    await launch(page, id)
+    await page.waitForTimeout(250)
+    await page.keyboard.press('Alt+H')
+    await expect(page.locator('.home')).toBeVisible()
+    // a closed app window is visibility:hidden — no descendant may override that and stay painted
+    await page.waitForTimeout(500)
+    const leaked = await page.evaluate((a) => {
+      const w = document.querySelector(`.app-window[data-app="${a}"]`)
+      return !!w && [...w.querySelectorAll('*')].some((e) => getComputedStyle(e).visibility === 'visible')
+    }, id)
+    if (leaked) leaks.push(id)
+  }
+  expect(leaks).toEqual([])
+  expect(errors).toEqual([])
+})

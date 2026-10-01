@@ -34,6 +34,7 @@ export function Screen({ width, height, fullscreen }: { width: number; height: n
   const textScale = useOS((s) => s.textScale)
   const voiceOver = useOS((s) => s.accessibility.voiceOver)
   const wallpaper = useOS((s) => s.wallpaper)
+  const wallpaperFit = useOS((s) => s.wallpaperFit)
   const locked = useOS((s) => s.locked)
   const lowPower = useOS((s) => s.lowPower)
   const overlay = useOS((s) => s.overlay)
@@ -80,7 +81,7 @@ export function Screen({ width, height, fullscreen }: { width: number; height: n
     >
       <GlassFilters />
       <div className="layer-wallpaper">
-        <Wallpaper id={wallpaper} dark={theme === 'dark'} />
+        <Wallpaper id={wallpaper} dark={theme === 'dark'} fit={wallpaperFit === 'fill' ? undefined : wallpaperFit} />
       </div>
       {!locked && <HomeScreen />}
       <AppHost />

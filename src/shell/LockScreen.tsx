@@ -133,7 +133,7 @@ function LockContent({ locked }: { locked: boolean }) {
   return (
     <div className={`lock-inner ${landscape ? 'landscape' : ''} ${top ? 'clock-top' : ''}`} onPointerDown={onPointerDown} onContextMenu={(e) => { if (locked && !(e.target as HTMLElement).closest('.notif')) { e.preventDefault(); setCustomizing(true) } }} style={{ transform: dragY ? `translateY(${dragY * 0.6}px)` : undefined, opacity: dragY ? 1 + dragY / 600 : 1 }}>
       <div className="lock-wallpaper">
-        <Wallpaper id={st.wallpaper} dark={st.theme === 'dark'} blur={!locked ? 30 : 0} />
+        <Wallpaper id={st.wallpaper} dark={st.theme === 'dark'} blur={!locked ? 30 : 0} fit={st.wallpaperFit === 'fill' ? undefined : st.wallpaperFit} />
         {!locked && <div className="nc-dim" />}
       </div>
       <div className="lock-top">
@@ -352,7 +352,7 @@ function LockCustomizer({ onDone }: { onDone: () => void }) {
         <span className="t-headline" style={{ color: '#fff' }}>Lock Screen</span>
         <button className="bar-btn prominent" onClick={() => { apply(i); onDone() }}>Done</button>
       </div>
-      <div className="lc-track" style={{ transform: `translateX(calc(50% - ${i * 250 + 110}px))` }}>
+      <div className="lc-track" style={{ transform: `translateX(calc(50% - ${i * 216 + 93}px))` }}>
         {LOCK_PROFILES.map((p, idx) => (
           <button key={p.name} className={`lc-card ${idx === i ? 'on' : ''}`} onClick={() => setI(idx)} aria-label={`${p.name} Lock Screen`}>
             <Wallpaper id={p.wallpaper} dark={false} />
@@ -374,6 +374,16 @@ function LockCustomizer({ onDone }: { onDone: () => void }) {
             <button key={f} className={`chip ${st.lockClockStyle === f ? 'active' : ''}`} style={CLOCK_FONTS[f]} onClick={() => st.set({ lockClockStyle: f as 'bold' })}>12</button>
           ))}
         </div>
+        {st.wallpaper.startsWith('scene:') && (
+          <>
+            <div className="t-footnote" style={{ opacity: 0.7, margin: '12px 0 8px' }}>Photo</div>
+            <div className="row gap8">
+              <button className={`chip ${st.wallpaperFit === 'fill' ? 'active' : ''}`} onClick={() => st.set({ wallpaperFit: 'fill' })}>Fill</button>
+              <button className={`chip ${st.wallpaperFit === 'photo' ? 'active' : ''}`} onClick={() => st.set({ wallpaperFit: 'photo' })}>Whole Photo</button>
+              <button className={`chip ${st.wallpaperFit === 'extend' ? 'active' : ''}`} aria-label="Extend with Apple Intelligence" onClick={() => { st.set({ wallpaperFit: 'extend' }); st.showToast('Extended with Apple Intelligence', 'sparkles') }}><AISparkle size={13} /> Extend</button>
+            </div>
+          </>
+        )}
         <div className="t-footnote" style={{ opacity: 0.7, margin: '12px 0 8px' }}>Wallpaper</div>
         <div className="row gap8" style={{ overflowX: 'auto' }}>
           {WALLPAPERS.map((w) => (
@@ -382,6 +392,9 @@ function LockCustomizer({ onDone }: { onDone: () => void }) {
             </button>
           ))}
         </div>
+        <button className="chip" style={{ marginTop: 12 }} onClick={() => { onDone(); st.unlock(); window.setTimeout(() => useOS.getState().launch('playground'), 350) }}>
+          <AISparkle size={13} /> Create with Image Playground
+        </button>
       </Glass>
     </div>
   )

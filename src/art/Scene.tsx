@@ -651,10 +651,13 @@ interface SceneProps {
   /** ids of SCENE_OBJECTS removed by Clean Up */
   removed?: string[]
   grain?: boolean
+  /** Render only a horizontal band of the photo (fractions of its height), stretched to fill —
+   *  used to continue a photo's top/bottom edge when a wallpaper is extended. */
+  strip?: [number, number]
 }
 
 /** Renders a generated photo scene. */
-export const Scene = memo(function Scene({ scene, className, style, fit = 'cover', extended, reframe, filter, title, removed, grain }: SceneProps) {
+export const Scene = memo(function Scene({ scene, className, style, fit = 'cover', extended, reframe, filter, title, removed, grain, strip }: SceneProps) {
   const uidBase = useId().replace(/:/g, '')
   if (scene.startsWith('gen:')) return <GenImage seed={scene.slice(4)} className={className} style={{ ...style, filter }} />
   const def = scenes[scene] ?? scenes['sunset-beach']
@@ -662,13 +665,13 @@ export const Scene = memo(function Scene({ scene, className, style, fit = 'cover
   const H = def.portrait ? 400 : 300
   const ctx: Ctx = { id: (s) => `${uidBase}-${s}`, W, H }
   const pad = extended ? 60 : 0
-  const vb = `${-pad + (reframe?.x ?? 0)} ${-pad * 0.75 + (reframe?.y ?? 0)} ${W + pad * 2} ${H + pad * 1.5}`
+  const vb = strip ? `0 ${H * strip[0]} ${W} ${H * (strip[1] - strip[0])}` : `${-pad + (reframe?.x ?? 0)} ${-pad * 0.75 + (reframe?.y ?? 0)} ${W + pad * 2} ${H + pad * 1.5}`
   return (
     <svg
       className={className}
       style={{ display: 'block', filter, ...style }}
       viewBox={vb}
-      preserveAspectRatio={fit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet'}
+      preserveAspectRatio={strip ? 'none' : fit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet'}
       role="img"
       aria-label={title ?? scene}
     >

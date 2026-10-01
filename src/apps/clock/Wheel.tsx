@@ -56,7 +56,7 @@ export function Wheel<T extends string | number>({ items, value, onChange, width
         k.style.visibility = 'hidden'
         continue
       }
-      k.style.visibility = 'visible'
+      k.style.visibility = ''
       k.style.transform = `translateZ(${-R}px) rotateX(${-a}deg) translateZ(${R}px)`
       k.style.opacity = String(Math.max(0.15, Math.cos((a * Math.PI) / 180)))
       k.classList.toggle('sel', Math.abs(a) < STEP / 2)

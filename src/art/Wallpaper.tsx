@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Scene } from './Scene'
+import { Scene, sceneIsPortrait } from './Scene'
 import { GenImage } from './GenImage'
 
 export interface WallpaperDef {
@@ -55,13 +55,43 @@ export function wallpaperDef(id: string): WallpaperDef {
 }
 
 /** Full-bleed wallpaper. `dim` darkens it for Dark Mode like iOS does. */
-export const Wallpaper = memo(function Wallpaper({ id, dark, blur = 0, className }: { id: string; dark: boolean; blur?: number; className?: string }) {
+export const Wallpaper = memo(function Wallpaper({ id, dark, blur = 0, className, fit }: { id: string; dark: boolean; blur?: number; className?: string; fit?: 'photo' | 'extend' }) {
   const def = wallpaperDef(id)
   const style: React.CSSProperties = { position: 'absolute', inset: 0, filter: blur ? `blur(${blur}px) saturate(1.2)` : undefined, transform: blur ? 'scale(1.1)' : undefined }
   if (def.scene) {
+    const shade = dark ? 'brightness(.62)' : undefined
+    // "photo": the picture keeps its original 4:3 frame over a blurred fill, as iOS shows a photo
+    // that doesn't fill the screen; "extend": Apple Intelligence continues the scene edge to edge.
+    if (fit === 'photo' || fit === 'extend') {
+      // The whole photo sits in its original frame (4:3 or 3:4) below the clock.
+      const ratio = sceneIsPortrait(def.scene) ? 4 / 3 : 3 / 4
+      const top = ratio > 1 ? 22 : 34 // % of screen height
+      const frameH = `${ratio * 100}cqw`
+      const frame: React.CSSProperties = { position: 'absolute', left: 0, top: `${top}cqh`, width: '100%', height: frameH, filter: shade }
+      if (fit === 'photo') {
+        return (
+          <div className={className} style={{ ...style, overflow: 'hidden', containerType: 'size' }}>
+            <Scene scene={def.scene} style={{ position: 'absolute', inset: -40, width: 'calc(100% + 80px)', height: 'calc(100% + 80px)', filter: `blur(34px) saturate(1.3) ${shade ?? ''}` }} />
+            <Scene scene={def.scene} fit="contain" style={frame} />
+          </div>
+        )
+      }
+      // Extend: Apple Intelligence continues the photo past its edges — the top and bottom rows are
+      // carried outwards (softly blurred so they read as new sky / ground), then the original
+      // frame is feathered into them.
+      const feather = 'linear-gradient(to bottom, transparent 0, #000 9%, #000 91%, transparent 100%)'
+      const soft = `blur(6px) ${shade ?? ''}`
+      return (
+        <div className={className} style={{ ...style, overflow: 'hidden', containerType: 'size' }}>
+          <Scene scene={def.scene} strip={[0, 0.06]} style={{ position: 'absolute', left: -10, right: -10, top: -10, width: 'calc(100% + 20px)', height: `calc(${top}cqh + 30px)`, filter: soft }} />
+          <Scene scene={def.scene} strip={[0.94, 1]} style={{ position: 'absolute', left: -10, right: -10, top: `calc(${top}cqh + ${frameH} - 20px)`, width: 'calc(100% + 20px)', height: `calc(${100 - top}cqh - ${frameH} + 30px)`, filter: soft }} />
+          <Scene scene={def.scene} fit="contain" style={{ ...frame, WebkitMaskImage: feather, maskImage: feather }} />
+        </div>
+      )
+    }
     return (
       <div className={className} style={style}>
-        <Scene scene={def.scene} style={{ width: '100%', height: '100%', filter: dark ? 'brightness(.62)' : undefined }} />
+        <Scene scene={def.scene} style={{ width: '100%', height: '100%', filter: shade }} />
       </div>
     )
   }

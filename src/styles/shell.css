@@ -407,12 +407,12 @@
 .lock-customizer { position: absolute; inset: 0; z-index: 20; background: rgb(0 0 0 / 0.55); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); display: flex; flex-direction: column; animation: fade-in 0.25s both; }
 .lc-head { display: flex; align-items: center; justify-content: space-between; padding: 60px 16px 10px; }
 .lc-head .bar-btn { height: 36px; color: #fff; }
-.lc-track { display: flex; gap: 30px; padding: 20px 0; transition: transform 0.45s var(--spring-sheet); }
-.lc-card { position: relative; width: 220px; height: 390px; border-radius: 34px; overflow: hidden; flex-shrink: 0; transform: scale(0.88); opacity: 0.6; transition: transform 0.4s var(--spring-snappy), opacity 0.3s; box-shadow: 0 10px 40px rgb(0 0 0 / 0.4); }
+.lc-track { display: flex; gap: 30px; padding: 12px 0; flex-shrink: 0; transition: transform 0.45s var(--spring-sheet); }
+.lc-card { position: relative; width: 186px; height: 330px; border-radius: 34px; overflow: hidden; flex-shrink: 0; transform: scale(0.88); opacity: 0.6; transition: transform 0.4s var(--spring-snappy), opacity 0.3s; box-shadow: 0 10px 40px rgb(0 0 0 / 0.4); }
 .lc-card.on { transform: scale(1); opacity: 1; }
-.lc-clock { position: absolute; left: 0; right: 0; text-align: center; font-size: 58px; line-height: 1; }
+.lc-clock { position: absolute; left: 0; right: 0; text-align: center; font-size: 50px; line-height: 1; }
 .lc-name { position: absolute; bottom: 14px; left: 0; right: 0; text-align: center; color: #fff; font: 600 14px/1 var(--font-text); text-shadow: 0 1px 4px rgb(0 0 0 / 0.5); }
-.lc-options { margin: auto 14px 30px; border-radius: 28px; padding: 16px; color: #fff; }
+.lc-options { margin: auto 14px 24px; border-radius: 28px; padding: 16px; color: #fff; min-height: 0; overflow-y: auto; flex-shrink: 1; }
 .lc-options .chip { background: rgb(255 255 255 / 0.15); color: #fff; }
 .lc-options .chip.active { background: #fff; color: #000; }
 .lc-wp { position: relative; width: 48px; height: 80px; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
