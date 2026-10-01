@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { useOS, uid } from '../../os/store'
 import { SAFARI_SITES, BOOKMARKS } from '../../os/data/world'
 import type { SafariTab } from '../../os/types'
+import { requestToBrowse } from '../messages/askToBrowse'
 
 export const START = 'about:start'
 export const SEARCH_HOST = 'search.example'
@@ -230,25 +231,8 @@ export const GROUP_COLOR: Record<string, string> = {
 export const groupColor = (g: string) => GROUP_COLOR[g] ?? '#5856d6'
 
 // ---------------- Screen Time: Ask to Browse ----------------
-export function askPermission(host: string) {
-  const st = S()
-  const cfg = st.screenTime
-  if (cfg.pendingRequests.some((r) => r.site === host && r.status === 'pending')) return
-  const id = uid('req')
-  st.set({ screenTime: { ...cfg, pendingRequests: [...cfg.pendingRequests, { id, site: host, ts: Date.now(), status: 'pending' }] } })
-  st.showToast(`Request sent to your parent`, 'send')
-  window.setTimeout(() => {
-    const s2 = S()
-    const c2 = s2.screenTime
-    const req = c2.pendingRequests.find((r) => r.id === id)
-    if (!req || req.status !== 'pending') return
-    s2.set({
-      screenTime: {
-        ...c2,
-        approvedSites: c2.approvedSites.includes(host) ? c2.approvedSites : [...c2.approvedSites, host],
-        pendingRequests: c2.pendingRequests.map((r) => (r.id === id ? { ...r, status: 'approved' } : r)),
-      },
-    })
-    s2.notify({ app: 'settings', title: 'Screen Time', subtitle: 'Request Approved', body: `Mom approved your request to visit ${host}.`, route: 'screentime', timeSensitive: true })
-  }, 4500)
+/** Child account: send the request to Mom as an Ask to Browse card in Messages. Mom's reply
+ * (after a short delay) approves the site, which unlocks the page here. */
+export function askPermission(host: string, reason = '') {
+  requestToBrowse(host, reason)
 }

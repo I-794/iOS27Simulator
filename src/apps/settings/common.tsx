@@ -238,6 +238,7 @@ export interface SettingsPrefs {
   appLimits: Record<string, number>
   childSetupDone: boolean
   siriAiWaitlist: 'none' | 'joined' | 'available'
+  carplay: { paired: boolean; whileLocked: boolean; airplayVideo: boolean; parked: boolean }
 }
 
 export const DEFAULT_PREFS: SettingsPrefs = {
@@ -340,6 +341,7 @@ export const DEFAULT_PREFS: SettingsPrefs = {
   appLimits: { Social: 60, Games: 45 },
   childSetupDone: false,
   siriAiWaitlist: 'none',
+  carplay: { paired: true, whileLocked: true, airplayVideo: true, parked: true },
 }
 
 interface PrefsStore extends SettingsPrefs {

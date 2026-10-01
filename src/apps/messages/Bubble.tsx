@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState, type ReactNode } from 'react'
-import { Play, Pause, CloudDownload, MapPin, Link2, CircleAlert, X } from 'lucide-react'
+import { Play, Pause, CloudDownload, MapPin, Link2, CircleAlert, X, Hourglass, Check, Clock } from 'lucide-react'
 import type { Conversation, Message } from '../../os/types'
 import { useOS } from '../../os/store'
 import { Scene } from '../../art/Scene'
@@ -13,6 +13,7 @@ import { detectSpans, isJumboEmoji, type Span } from './detect'
 import { useMsgLocal } from './msgStore'
 import { download, cancelUpload, retry } from './engine'
 import { shortName, contactForNumber, directionsTo } from '../contacts/shared'
+import { isAskUrl, askIdOf, decideBrowse } from './askToBrowse'
 
 // ---------------------------------------------------------------------------
 // Tail + drawing helpers
@@ -215,6 +216,45 @@ function LinkCard({ m }: { m: Message }) {
   )
 }
 
+/** iOS 27 Screen Time "Ask to Browse" request card (child → parent). */
+function BrowseRequestCard({ m }: { m: Message }) {
+  const a = m.attachment!
+  const id = askIdOf(a.url ?? '')
+  const req = useOS((s) => s.screenTime.pendingRequests.find((r) => r.id === id))
+  const mine = m.from === 'me'
+  const host = a.title ?? req?.site ?? ''
+  const status = req?.status ?? 'expired'
+  const decide = (v: 'approved' | 'denied') => {
+    if (decideBrowse(id, v)) useOS.getState().showToast(v === 'approved' ? `${host} approved for ${shortName(m.from)}` : `${host} declined`)
+  }
+  return (
+    <div className={`msg-ask ${mine ? 'me' : 'them'}`} onClick={(e) => e.stopPropagation()}>
+      <div className="msg-ask-head">
+        <span className="msg-ask-icon"><Hourglass size={15} strokeWidth={2.4} /></span>
+        <span>Ask to Browse</span>
+      </div>
+      <div className="msg-ask-body">
+        <div className="msg-ask-who">{mine ? 'You asked to visit' : `${shortName(m.from)} wants to visit`}</div>
+        <div className="msg-ask-site">{host}</div>
+        {a.subtitle && <div className="msg-ask-reason">“{a.subtitle}”</div>}
+      </div>
+      {status === 'pending' && !mine ? (
+        <div className="msg-ask-actions">
+          <button className="msg-ask-btn deny" onClick={() => decide('denied')}>Decline</button>
+          <button className="msg-ask-btn approve" onClick={() => decide('approved')}>Approve</button>
+        </div>
+      ) : (
+        <div className={`msg-ask-status ${status}`}>
+          {status === 'pending' ? <><Clock size={14} /> Pending</> : status === 'approved' ? <><Check size={14} strokeWidth={3} /> Approved</> : status === 'denied' ? <><X size={14} strokeWidth={3} /> Declined</> : 'Request expired'}
+          {status === 'approved' && mine && (
+            <button className="msg-ask-open" onClick={() => useOS.getState().launch('safari', { route: `url/${host}` })}>Open</button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function AudioBubble({ m }: { m: Message }) {
   const dur = m.attachment?.duration ?? 6
   const [pos, setPos] = useState(0)
@@ -309,6 +349,7 @@ export const MessageRow = memo(function MessageRow({ m, first, last, showName, r
 
   let body: ReactNode
   if (a?.kind === 'photo' || a?.kind === 'video') body = <MediaAttachment conv={ctx.conv} m={m} onOpen={ctx.onOpenPhoto} />
+  else if (a?.kind === 'link' && isAskUrl(a.url)) body = <BrowseRequestCard m={m} />
   else if (a?.kind === 'link') body = <LinkCard m={m} />
   else if (a?.kind === 'drawing') body = <div className="msg-drawing-card"><DrawingView data={a.drawing ?? ''} /></div>
   else if (a?.kind === 'audio') body = <AudioBubble m={m} />

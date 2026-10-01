@@ -297,6 +297,14 @@ button.sf-menurow:active { background: var(--fill-tertiary); }
 .sf-restricted-ask { margin-top: 10px; height: 48px; padding: 0 28px; border-radius: 24px; background: #007aff; color: #fff; font: var(--t-headline); }
 .sf-restricted-wait { margin-top: 10px; display: inline-flex; align-items: center; gap: 10px; font: var(--t-subhead); color: #6e6e73; }
 .sf-restricted-denied { color: #ff3b30 !important; font-size: 13px !important; }
+.sf-restricted-link { margin-top: 2px; height: 34px; padding: 0 14px; color: #007aff; font: var(--t-subhead); font-weight: 600; }
+.sf-restricted-form { width: 100%; max-width: 320px; display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin-top: 8px; }
+.sf-restricted-form label { font: var(--t-footnote); color: #6e6e73; }
+.sf-restricted-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.sf-restricted-chips button { height: 32px; padding: 0 12px; border-radius: 16px; background: #fff; color: #1c1c1e; font: 500 14px/1 var(--font-text); box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.12); }
+.sf-restricted-chips button.on { background: #007aff; color: #fff; box-shadow: none; }
+.sf-restricted-form input { height: 44px; border-radius: 12px; border: 0; padding: 0 14px; background: #fff; color: #1c1c1e; font: var(--t-body); box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.12); outline: none; }
+.sf-restricted-form .sf-restricted-ask { margin-top: 4px; align-self: center; }
 .sf-restricted small { margin-top: 20px; color: #8e8e93; font: var(--t-caption1); }
 
 /* ============================ Web page base ============================ */

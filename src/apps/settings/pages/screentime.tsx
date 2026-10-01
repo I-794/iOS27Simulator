@@ -9,7 +9,10 @@ import { SCREEN_TIME_USAGE } from '../../../os/data/world'
 import { AppIconArt, ICONS } from '../../../icons/AppIconArt'
 import type { AppId, ScreenTimeConfig } from '../../../os/types'
 import { WEEKDAYS_SHORT } from '../../../os/time'
+import { decideBrowse, simulateChildRequest, reasonFor, routeFor } from '../../messages/askToBrowse'
 import { XRow, ROUTES, HeroPage, Sub, Ico, Go, Push, ChoicePage, usePrefs, usePref, New27, os, setST, fmtMin } from '../common'
+
+const IOS27_FAMILY_NOTE = 'New child features — Ask to Browse, Time Allowances, Schedules and app selection — need every device in your family group, including parents’ devices, updated to iOS 27, iPadOS 27 or macOS 27.'
 
 const CAT_COLORS: Record<string, string> = { Social: '#0a84ff', Education: '#34c759', Entertainment: '#ff9f0a', Games: '#bf5af2', Creativity: '#ff375f', Travel: '#64d2ff' }
 const CAT_ICONS: Record<ScreenTimeConfig['allowances'][number]['category'], typeof Timer> = { Entertainment: Music2, Games: Gamepad2, Social: MessageCircle, Creativity: Palette, Education: GraduationCap }
@@ -71,7 +74,7 @@ function ScreenTimePage() {
         <Push icon={<Ico c="#34c759" i={MessageCircle} fill />} title="Communication Limits" detail={prefs.commLimits} page={() => <ChoicePage title="Communication Limits" options={['Everyone', 'Contacts Only', 'Contacts & Groups'] as const} use={() => usePref('commLimits')} footer="Controls who you can communicate with during allowed screen time." />} />
         <Go icon={<Ico c="#007aff" i={ShieldCheck} />} to="screentime/safety" title="Communication Safety" detail={stc.communicationSafety ? 'On' : 'Off'} />
       </List>
-      <List header="Family">
+      <List header="Family" footer="Every family member’s device needs iOS 27 for the new child features.">
         <Row icon={<Avatar id="mia" size={32} />} title="Mia" subtitle={stc.childMode ? 'Child Account · Simulating Mia’s iPhone' : 'Child Account · Age 10'} chevron onClick={() => nav.push(ROUTES['screentime/family'].el())} />
       </List>
       <List>
@@ -334,8 +337,9 @@ function FamilyChildPage() {
         <Push icon={<Ico c="#007aff" i={Smartphone} />} title="Allowed Apps" detail={`${stc.allowedApps.filter((a) => a !== 'settings').length} apps`} page={() => <AllowedAppsPage />} />
         {setupDone && <Row tint title="Run Setup Again" onClick={() => setWizard(true)} />}
       </List>
-      <List header={<span className="row gap6">Web <New27 /></span>}>
+      <List header={<span className="row gap6">Web <New27 /></span>} footer={pending.length ? 'Mia also sent these to you in Messages. Approving in either place unlocks the website on her iPhone.' : undefined}>
         <Push icon={<Ico c="#007aff" i={Globe} />} title="Ask to Browse" detail={pending.length ? `${pending.length} pending` : stc.askToBrowse ? 'On' : 'Off'} page={() => <AskToBrowsePage />} />
+        {pending.map((r) => <RequestRow key={r.id} id={r.id} site={r.site} />)}
       </List>
       <List header={<span className="row gap6">Time <New27 /></span>}>
         <Push icon={<Ico c="#ff9500" i={Timer} />} title="Time Allowances" detail={`${stc.allowances.filter((a) => a.enabled).length} on`} page={() => <AllowancesPage />} />
@@ -346,6 +350,7 @@ function FamilyChildPage() {
         <Go icon={<Ico c="#007aff" i={ShieldCheck} />} to="screentime/safety" title="Communication Safety" detail={stc.communicationSafety ? 'On' : 'Off'} />
         <Row icon={<Ico c="#34c759" i={Users} />} title="Family Sharing" chevron onClick={() => nav.push(ROUTES['account/family'].el())} />
       </List>
+      <div className="stg-foot-note t-footnote secondary">{IOS27_FAMILY_NOTE}</div>
       <ChildSetupWizard open={wizard} onClose={() => setWizard(false)} />
     </Sub>
   )
@@ -387,6 +392,7 @@ function ChildSetupWizard({ open, onClose }: { open: boolean; onClose: () => voi
             <h2 className="stg-qs-title">Set Up Mia’s iPhone</h2>
             <p className="secondary">Choose exactly which apps Mia can use, whether she needs to ask before visiting websites, and how much time she gets each day.</p>
             <Button block onClick={() => setStep(1)}>Get Started</Button>
+            <p className="t-footnote secondary" style={{ marginTop: 14 }}>{IOS27_FAMILY_NOTE}</p>
           </div>
         )}
         {step === 1 && (
@@ -427,19 +433,9 @@ function ChildSetupWizard({ open, onClose }: { open: boolean; onClose: () => voi
 function AskToBrowsePage() {
   const stc = useOS((s) => s.screenTime)
   const [site, setSite] = useState('')
-  const decide = (id: string, status: 'approved' | 'denied') => {
-    const req = stc.pendingRequests.find((r) => r.id === id)
-    if (!req) return
-    setST({
-      pendingRequests: stc.pendingRequests.map((r) => (r.id === id ? { ...r, status } : r)),
-      approvedSites: status === 'approved' && !stc.approvedSites.includes(req.site) ? [...stc.approvedSites, req.site] : stc.approvedSites,
-    })
-    os().showToast(status === 'approved' ? `${req.site} approved for Mia` : `${req.site} declined`)
-  }
   const simulate = () => {
-    const pick = ['videotube.example', 'gamezone.example', 'drawingclub.example', 'spacefacts.example'].find((s) => !stc.approvedSites.includes(s) && !stc.pendingRequests.some((r) => r.site === s && r.status === 'pending')) ?? 'kidsnews.example'
-    setST({ pendingRequests: [{ id: uid('req'), site: pick, ts: Date.now(), status: 'pending' }, ...stc.pendingRequests] })
-    os().notify({ app: 'settings', title: 'Screen Time', body: `Mia is asking to visit ${pick}.`, route: 'screentime/family' })
+    const site = simulateChildRequest()
+    os().showToast(`Mia asked to visit ${site} — see Messages`)
   }
   const add = () => {
     const s = site.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '')
@@ -451,25 +447,12 @@ function AskToBrowsePage() {
   const history = stc.pendingRequests.filter((r) => r.status !== 'pending').slice(0, 6)
   return (
     <Sub title="Ask to Browse">
-      <List footer="When on, Mia can only open websites you’ve approved. Anything else sends you a request. In child mode, Safari shows the request screen.">
+      <List footer="On by default for children under 13. Mia can only open websites you’ve approved; anything else sends a request that parents can approve in Messages, here, or in person on Mia’s iPhone.">
         <Row title="Ask to Browse" toggle={{ value: stc.askToBrowse, onChange: (v) => setST({ askToBrowse: v }) }} />
       </List>
       <List header={`Requests${pending.length ? ` (${pending.length})` : ''}`}>
         {pending.length === 0 && <Row title={<span className="secondary">No pending requests</span>} />}
-        {pending.map((r) => (
-          <Row
-            key={r.id}
-            icon={<span className="stg-site-ico">{r.site[0].toUpperCase()}</span>}
-            title={r.site}
-            subtitle="Mia wants to visit this website"
-            trailing={
-              <span className="row gap6">
-                <button className="stg-pill deny" onClick={() => decide(r.id, 'denied')}>Deny</button>
-                <button className="stg-pill approve" onClick={() => decide(r.id, 'approved')}>Approve</button>
-              </span>
-            }
-          />
-        ))}
+        {pending.map((r) => <RequestRow key={r.id} id={r.id} site={r.site} />)}
         <Row tint title="Simulate a Request from Mia" onClick={simulate} />
       </List>
       {history.length > 0 && (
@@ -484,6 +467,34 @@ function AskToBrowsePage() {
         <Row title="Add Website" trailing={<span className="row gap8"><input className="text-input stg-field" value={site} onChange={(e) => setSite(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} placeholder="example.com" aria-label="Website to approve" /><button className="stg-link" onClick={add}>Add</button></span>} />
       </List>
     </Sub>
+  )
+}
+
+/** A pending web request with Approve / Decline (parent side). */
+function RequestRow({ id, site }: { id: string; site: string }) {
+  const reason = reasonFor(id)
+  const decide = (status: 'approved' | 'denied') => {
+    if (decideBrowse(id, status)) os().showToast(status === 'approved' ? `${site} approved for Mia` : `${site} declined`)
+  }
+  const open = () => {
+    const r = routeFor(id)
+    if (r) os().launch('messages', { route: r })
+    else os().showToast('Requested in person on Mia’s iPhone')
+  }
+  return (
+    <div className="row-item has-icon stg-req">
+      <span className="stg-site-ico">{site[0].toUpperCase()}</span>
+      <span className="row-main">
+        <button className="stg-req-main" onClick={open} aria-label={`Show request for ${site} in Messages`}>
+          <span className="row-title">{site}</span>
+          <span className="row-sub">{reason ? `Mia: “${reason}”` : 'Mia wants to visit this website'}</span>
+        </button>
+        <span className="row gap8 stg-req-actions">
+          <button className="stg-pill deny" onClick={() => decide('denied')}>Decline</button>
+          <button className="stg-pill approve" onClick={() => decide('approved')}>Approve</button>
+        </span>
+      </span>
+    </div>
   )
 }
 
