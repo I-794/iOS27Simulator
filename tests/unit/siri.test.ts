@@ -98,6 +98,15 @@ describe('siri', () => {
     expect(r.intent).toBe('weather')
     expect(r.text).toMatch(/Robotics/)
   })
+  it('records a voice memo', () => {
+    for (const q of ['Record a voice memo', 'start a voice memo', 'Take a voice note']) {
+      const r = ask(q, 't')
+      expect(r.intent).toBe('voice_memo')
+      expect(r.open).toEqual({ app: 'voicememos', route: 'record' })
+    }
+    expect(ask('Open Voice Memos', 't').intent).toBe('open_app')
+    expect(ask('Start a screen recording', 't').intent).not.toBe('voice_memo')
+  })
   it('flight confirmation', () => {
     expect(ask("What's my confirmation code?", 't').text).toMatch(/7XKQ2P/)
   })
@@ -115,6 +124,10 @@ describe('search', () => {
     expect(searchPhotos('Biscuit at the beach').map((p) => p.id)).toContain('p-biscuit-beach')
     expect(searchPhotos('5 stars').length).toBeGreaterThan(2)
     expect(searchPhotos('receipt')[0].id).toBe('p-receipt')
+  })
+  it('finds Voice Memos by typing "voice"', () => {
+    expect(search('voice')[0]).toMatchObject({ type: 'app', app: 'voicememos' })
+    expect(search('recorder')[0]).toMatchObject({ type: 'app', app: 'voicememos' })
   })
   it('finds contacts by phone number', () => {
     expect(search('0103345')[0]?.title).toMatch(/Alex/)

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { MessageCircle, Mail, Calendar, FileText, Folder, Settings, Video, Globe, CheckCircle2, User, Timer, Phone, Zap, Lightbulb, Search as SearchIcon, ChevronRight } from 'lucide-react'
+import { MessageCircle, Mail, Calendar, FileText, Folder, Settings, Video, Globe, CheckCircle2, User, Timer, Phone, Zap, Lightbulb, Mic, Search as SearchIcon, ChevronRight } from 'lucide-react'
 import { useOS } from '../os/store'
 import { search, type Hit, type EntityType } from '../os/search'
 import { AppIconArt, ICONS } from '../icons/AppIconArt'
@@ -40,6 +40,7 @@ function quickActions(q: string): Action[] {
   if (/dark/.test(l)) out.push({ label: `Turn ${st.theme === 'dark' ? 'off' : 'on'} Dark Mode`, sub: 'Settings', icon: <Zap size={18} />, run: () => st.set({ theme: st.theme === 'dark' ? 'light' : 'dark' }) })
   if (/flash|torch/.test(l)) out.push({ label: `Turn ${st.flashlight ? 'off' : 'on'} Flashlight`, sub: 'Control Center', icon: <Lightbulb size={18} />, run: () => st.set({ flashlight: !st.flashlight }) })
   if (/light/.test(l) && !/flash/.test(l)) out.push({ label: 'Turn off all lights', sub: 'Home', icon: <Lightbulb size={18} />, run: () => st.set({ accessories: st.accessories.map((a) => (a.kind === 'light' ? { ...a, on: false } : a)) }) })
+  if (/^(voic|reco)|voice|record/.test(l) && l.length > 2) out.push({ label: 'Record a Voice Memo', sub: 'Voice Memos', icon: <Mic size={18} />, run: () => st.launch('voicememos', { route: 'record' }) })
   if (/glass|clear|tint/.test(l)) out.push({ label: 'Adjust Liquid Glass', sub: 'Settings', icon: <Settings size={18} />, run: () => st.launch('settings', { route: 'display/glass' }) })
   for (const sc of st.shortcuts) if (sc.name.toLowerCase().includes(l) && l.length > 2) out.push({ label: sc.name, sub: 'Shortcut', icon: <Zap size={18} color={sc.color} />, run: () => st.launch('shortcuts', { route: `run/${sc.id}` }) })
   return out.slice(0, 4)
@@ -147,6 +148,7 @@ function SpotlightInner() {
                   { l: 'Directions to Lincoln High', a: () => useOS.getState().launch('maps', { route: 'route/school' }) },
                   { l: 'Play Study Focus', a: () => useOS.getState().playTrack('t5', ['t5', 't9', 't3'], 'Study Focus') },
                   { l: 'Front Door camera', a: () => useOS.getState().launch('home', { route: 'camera/Front Door' }) },
+                  { l: 'Record a Voice Memo', a: () => useOS.getState().launch('voicememos', { route: 'record' }) },
                 ].map((x) => (
                   <button key={x.l} className="spot-row" onClick={() => { useOS.getState().setOverlay(null); x.a() }}>
                     <span className="spot-row-icon"><Zap size={16} /></span><span className="grow">{x.l}</span><ChevronRight size={16} style={{ opacity: 0.5 }} />

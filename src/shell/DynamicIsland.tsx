@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Play, Pause, SkipForward, SkipBack, Phone, PhoneOff, MicOff, Timer as TimerIcon, Navigation, BellOff, Bell, Check, Airplay, Headphones, Wifi, Link2, BatteryCharging, Zap, Package, Circle, Square, Heart, ScanFace, LockOpen, CarFront, Plane } from 'lucide-react'
+import { AudioLines, Play, Pause, SkipForward, SkipBack, Phone, PhoneOff, MicOff, Timer as TimerIcon, Navigation, BellOff, Bell, Check, Airplay, Headphones, Wifi, Link2, BatteryCharging, Zap, Package, Circle, Square, Heart, ScanFace, LockOpen, CarFront, Plane } from 'lucide-react'
 import { useOS, playbackPosition } from '../os/store'
 import { useNow, useLongPress } from '../os/hooks'
 import { fmtDuration } from '../os/time'
@@ -157,6 +157,7 @@ function Compact({ a }: { a: LiveActivity }) {
     case 'findmy':
       return <>{L(<span className="isl-find" style={{ transform: `rotate(${(a.data?.bearing as number) ?? 0}deg)` }}>➤</span>)}{T(<span className="isl-num" style={{ color: '#30d158' }}>{(a.data?.distance as string) ?? ''}</span>)}</>
     case 'recording':
+      if (a.data?.mode === 'playback') return <>{L(<AudioLines size={18} color="#ff453a" />)}{T(<span className="isl-num" style={{ color: '#fff' }}><Elapsed since={a.startedAt ?? Date.now()} /></span>)}</>
       return <>{L(<Circle size={14} fill="#ff453a" color="#ff453a" />)}{T(<span className="isl-num" style={{ color: '#ff453a' }}><Elapsed since={a.startedAt ?? Date.now()} /></span>)}</>
     case 'airdrop':
       return <>{L(<span className="airdrop-glyph" />)}{T(<span className="isl-num" style={{ color: '#0a84ff' }}>{Math.round((a.progress ?? 0) * 100)}%</span>)}</>
@@ -180,7 +181,7 @@ function Minimal({ a }: { a: LiveActivity }) {
   if (a.kind === 'flight') return <Plane size={16} color="#64d2ff" />
   if (a.kind === 'navigation') return <Navigation size={16} fill="#0a84ff" strokeWidth={0} />
   if (a.kind === 'call' || a.kind === 'facetime') return <Phone size={16} fill="#30d158" strokeWidth={0} />
-  if (a.kind === 'recording') return <Circle size={14} fill="#ff453a" color="#ff453a" />
+  if (a.kind === 'recording') return a.data?.mode === 'playback' ? <AudioLines size={16} color="#ff453a" /> : <Circle size={14} fill="#ff453a" color="#ff453a" />
   if (a.kind === 'findmy') return <span style={{ color: '#30d158' }}>➤</span>
   return <Zap size={16} />
 }
@@ -283,13 +284,22 @@ function Expanded({ a, onOpen }: { a: LiveActivity; onOpen: (app?: AppId) => voi
         </div>
       )
     }
-    case 'recording':
+    case 'recording': {
+      // screen recording (implicit 'rec') or an app's recording/playback (e.g. Voice Memos):
+      // ending the activity is the app's signal to stop and save / pause.
+      const screen = a.id === 'rec'
+      const playback = a.data?.mode === 'playback'
       return (
-        <div className="isl-exp row" style={{ justifyContent: 'space-between' }}>
-          <div className="row gap8" style={{ color: '#ff453a' }}><Circle size={14} fill="#ff453a" /> <span className="t-headline">Screen Recording</span></div>
-          <button className="isl-round" style={{ background: '#ff453a' }} aria-label="Stop recording" onClick={(e) => { e.stopPropagation(); st.set({ screenRecording: false }); st.showToast('Screen recording saved to Photos') }}><Square size={16} fill="#fff" /></button>
+        <div className="isl-exp row" style={{ justifyContent: 'space-between', gap: 12 }} onClick={() => !screen && onOpen(a.app)}>
+          <div className="row gap8" style={{ color: playback ? '#fff' : '#ff453a', minWidth: 0 }}>
+            {playback ? <AudioLines size={16} color="#ff453a" /> : <Circle size={14} fill="#ff453a" />}
+            <span className="t-headline nowrap">{screen ? 'Screen Recording' : a.title}</span>
+            {!screen && <span className="isl-num" style={{ color: playback ? 'rgb(255 255 255 / .7)' : '#ff453a' }}><Elapsed since={a.startedAt ?? Date.now()} /></span>}
+          </div>
+          <button className="isl-round" style={{ background: playback ? 'rgb(255 255 255 / .2)' : '#ff453a', flexShrink: 0 }} aria-label={playback ? 'Pause' : 'Stop recording'} onClick={(e) => { e.stopPropagation(); if (screen) { st.set({ screenRecording: false }); st.showToast('Screen recording saved to Photos') } else { st.endActivity(a.id); if (!playback) st.showToast('Voice memo saved') } }}>{playback ? <Pause size={16} fill="#fff" strokeWidth={0} /> : <Square size={16} fill="#fff" />}</button>
         </div>
       )
+    }
     case 'delivery':
     case 'workout':
     case 'airdrop':

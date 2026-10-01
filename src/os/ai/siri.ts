@@ -498,6 +498,18 @@ const skills: Skill[] = [
 
   // ---------- apps ----------
   {
+    id: 'voice_memo',
+    score: (q) =>
+      has(q, /\b(record|start|begin|take|make|new|capture)\b.*\bvoice (memo|note|recording)s?\b/) * 0.96 +
+      has(q, /^(record|start recording)\b.*\b(memo|audio|this|lecture|class|meeting|me|myself)\b/) * 0.9 -
+      has(q, /\b(screen|video)\b/) * 0.9,
+    run: () => {
+      const allowed = isAppAllowed('voicememos')
+      if (!allowed.allowed) return { text: `Voice Memos isn’t available right now. ${allowed.reason}`, intent: 'voice_memo' }
+      return { text: 'Recording a new voice memo.', open: { app: 'voicememos', route: 'record' }, intent: 'voice_memo' }
+    },
+  },
+  {
     id: 'open_app',
     score: (q) => (has(q, /^(open|launch|go to|start|show( me)?)\b/) * 0.5 + (findApp(q.l) ? 0.45 : 0)) * (q.toks.length <= 4 ? 1 : 0.6),
     run: (q) => {

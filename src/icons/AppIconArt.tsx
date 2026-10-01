@@ -400,6 +400,19 @@ export const ICONS: Record<AppId, IconSpec> = {
       </g>
     ),
   },
+  voicememos: {
+    name: 'Voice Memos', bg: ['#2c2c2e', '#050505'], g: ['#ff3b30', '#fff'], gd: ['#ff453a', '#f2f2f7'],
+    art: () => (
+      <g strokeLinecap="round">
+        {[6, 12, 20, 30, 16, 36, 24, 14, 28, 18, 10, 22, 8].map((h, i) => (
+          <line key={i} x1={19 + i * 5.2} x2={19 + i * 5.2} y1={50 - h / 2} y2={50 + h / 2} stroke={i < 7 ? F('--g1') : F('--g2')} strokeWidth="3" opacity={i < 7 ? 1 : 0.85} />
+        ))}
+        <line x1="53.4" x2="53.4" y1="24" y2="76" stroke={F('--g1')} strokeWidth="1.6" />
+        <circle cx="53.4" cy="24" r="2.6" fill={F('--g1')} />
+        <circle cx="53.4" cy="76" r="2.6" fill={F('--g1')} />
+      </g>
+    ),
+  },
 }
 
 interface Props {

@@ -3,7 +3,7 @@ export type AppId =
   | 'mail' | 'clock' | 'maps' | 'weather' | 'reminders' | 'notes' | 'news' | 'stocks' | 'podcasts'
   | 'health' | 'fitness' | 'home' | 'wallet' | 'settings' | 'siri' | 'playground' | 'shortcuts'
   | 'findmy' | 'freeform' | 'journal' | 'passwords' | 'files' | 'contacts' | 'calculator'
-  | 'games' | 'preview' | 'magnifier'
+  | 'games' | 'preview' | 'magnifier' | 'voicememos'
 
 export type Theme = 'light' | 'dark'
 export type Orientation = 'portrait' | 'landscape'

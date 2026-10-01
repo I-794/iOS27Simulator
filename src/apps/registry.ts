@@ -38,6 +38,7 @@ export const APP_COMPONENTS: Record<AppId, LazyExoticComponent<ComponentType>> =
   games: lazy(() => import('./games')),
   preview: lazy(() => import('./preview')),
   magnifier: lazy(() => import('./magnifier')),
+  voicememos: lazy(() => import('./voicememos')),
 }
 
 /** Warm an app's chunk ahead of launch (e.g. on pointer down on its icon). */
@@ -82,4 +83,5 @@ const LOADERS: Record<AppId, () => Promise<unknown>> = {
   games: () => import('./games'),
   preview: () => import('./preview'),
   magnifier: () => import('./magnifier'),
+  voicememos: () => import('./voicememos'),
 }

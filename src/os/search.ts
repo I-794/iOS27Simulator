@@ -178,12 +178,17 @@ export const SETTINGS_INDEX: { title: string; route: string; keywords: string }[
 // ---------------- index build ----------------
 let cache: { key: unknown[]; entities: Entity[] } | null = null
 
+/** Extra words that should find an app in Search (beyond its name). */
+const APP_KEYWORDS: Partial<Record<AppId, string[]>> = {
+  voicememos: ['voice', 'memo', 'recorder', 'audio', 'dictaphone', 'transcript'],
+}
+
 export function buildIndex(): Entity[] {
   const s = useOS.getState()
   const key = [s.conversations, s.mails, s.events, s.reminders, s.notes, s.photos, s.accessories]
   if (cache && cache.key.every((k, i) => k === key[i])) return cache.entities
   const E: Entity[] = []
-  for (const [id, spec] of Object.entries(ICONS)) E.push({ id: `app-${id}`, type: 'app', title: spec.name, app: id as AppId, keywords: [id] })
+  for (const [id, spec] of Object.entries(ICONS)) E.push({ id: `app-${id}`, type: 'app', title: spec.name, app: id as AppId, keywords: [id, ...(APP_KEYWORDS[id as AppId] ?? [])] })
   for (const c of CONTACTS) {
     E.push({ id: `contact-${c.id}`, type: 'contact', title: contactName(c.id, 'full'), subtitle: c.company ?? c.relation ?? c.phones[0], app: 'contacts', route: `contact/${c.id}`, keywords: [c.nickname ?? '', c.relation ?? '', ...c.phones.map((p) => p.replace(/\D/g, '')), ...c.phones, ...c.emails], contact: c.id })
   }

@@ -240,7 +240,7 @@ const DEFAULT_HOME: HomeItem[][] = [
     { type: 'app', id: 'playground' }, { type: 'app', id: 'shortcuts' }, { type: 'app', id: 'findmy' }, { type: 'app', id: 'freeform' },
     { type: 'app', id: 'journal' }, { type: 'app', id: 'fitness' }, { type: 'app', id: 'passwords' }, { type: 'app', id: 'files' },
     { type: 'app', id: 'news' }, { type: 'app', id: 'stocks' }, { type: 'app', id: 'contacts' }, { type: 'app', id: 'calculator' },
-    { type: 'folder', id: 'f-utilities', name: 'Utilities', apps: ['magnifier', 'preview', 'games'] },
+    { type: 'folder', id: 'f-utilities', name: 'Utilities', apps: ['magnifier', 'voicememos', 'preview', 'games'] },
   ],
   [
     { type: 'widget', id: 'w7', kind: 'photos', size: 'xl' },
@@ -574,11 +574,19 @@ export const useOS = create<OSState>()(
     }),
     {
       name: 'ios27-sim',
-      version: 5,
+      version: 6,
       storage: createJSONStorage(() => localStorage),
       migrate: (persisted, version) => {
         const p = (persisted ?? {}) as Partial<OSState>
-        return (version < 5 ? { ...p, homePages: DEFAULT_HOME, glassTint: 0.5 } : p) as OSState
+        if (version < 5) return { ...p, homePages: DEFAULT_HOME, glassTint: 0.5 } as OSState
+        // v6: Voice Memos was added — put it in the Utilities folder for existing Home Screens
+        if (version < 6 && p.homePages && !JSON.stringify(p.homePages).includes('"voicememos"')) {
+          const pages = JSON.parse(JSON.stringify(p.homePages)) as { type?: string; id?: string; apps?: string[] }[][]
+          const folder = pages.flat().find((x) => x?.type === 'folder' && x.id === 'f-utilities')
+          if (folder?.apps) folder.apps.push('voicememos')
+          return { ...p, homePages: pages } as unknown as OSState
+        }
+        return p as OSState
       },
       partialize: (s) => {
         const {

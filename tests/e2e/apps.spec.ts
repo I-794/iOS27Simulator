@@ -162,3 +162,41 @@ test('Every app launches cleanly and leaves nothing painted after closing', asyn
   expect(leaks).toEqual([])
   expect(errors).toEqual([])
 })
+
+// recordings made in the last minute (the library is only written to storage once it changes)
+const newMemos = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem('ios27-voicememos') ?? '{"state":{"memos":[]}}').state.memos as { createdAt: number; title: string }[]).filter((m) => Date.now() - m.createdAt < 60_000).map((m) => m.title))
+
+test('Voice Memos: a recording keeps running from the Dynamic Island and saves when stopped', async ({ page }) => {
+  await boot(page)
+  await launch(page, 'voicememos')
+  await expect(app(page, 'voicememos').getByRole('button', { name: 'Record' })).toBeVisible()
+  expect(await newMemos(page)).toEqual([])
+  await app(page, 'voicememos').getByRole('button', { name: 'Record' }).click()
+  await page.waitForTimeout(1500)
+  await page.keyboard.press('Alt+H')
+  await expect(page.locator('.island.pres-compact')).toBeVisible()
+  await launch(page, 'voicememos')
+  await app(page, 'voicememos').getByRole('button', { name: 'Stop recording' }).click()
+  await expect.poll(() => newMemos(page)).toEqual([expect.stringMatching(/^(Home|Lincoln High School) \d+$/)])
+})
+
+test('Search or Ask offers Record a Voice Memo', async ({ page }) => {
+  await boot(page)
+  await page.keyboard.press('Alt+Space')
+  await page.getByRole('button', { name: /Record a Voice Memo/ }).first().click()
+  await expect(page.locator('.app-window.active[data-app="voicememos"]')).toBeVisible()
+})
+
+test('Existing Home Screens get Voice Memos added to Utilities on upgrade', async ({ page }) => {
+  await boot(page)
+  await page.evaluate(() => {
+    const raw = JSON.parse(localStorage.getItem('ios27-sim')!)
+    const strip = (pages: { type: string; id: string; apps?: string[] }[][]) => pages.map((pg) => pg.map((x) => (x.type === 'folder' ? { ...x, apps: x.apps!.filter((a) => a !== 'voicememos') } : x)))
+    raw.state.homePages = strip(raw.state.homePages)
+    raw.version = 5
+    localStorage.setItem('ios27-sim', JSON.stringify(raw))
+  })
+  await page.reload()
+  await page.waitForFunction(() => !!(window as unknown as { __os?: unknown }).__os)
+  expect(await os(page, 'JSON.stringify(s.homePages).includes("voicememos")')).toBe(true)
+})
