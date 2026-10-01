@@ -200,3 +200,36 @@ test('Existing Home Screens get Voice Memos added to Utilities on upgrade', asyn
   await page.waitForFunction(() => !!(window as unknown as { __os?: unknown }).__os)
   expect(await os(page, 'JSON.stringify(s.homePages).includes("voicememos")')).toBe(true)
 })
+
+test('Ask to Browse: a parent approves Mia’s request from Settings › Screen Time', async ({ page }) => {
+  await boot(page)
+  await launch(page, 'settings', 'screentime/browse')
+  await app(page, 'settings').getByText('Simulate a Request from Mia').click()
+  await expect.poll(() => os(page, 's.screenTime.pendingRequests.filter((r) => r.status === "pending").length')).toBe(1)
+  const site = (await os(page, 's.screenTime.pendingRequests.find((r) => r.status === "pending").site')) as string
+  await app(page, 'settings').getByRole('button', { name: 'Approve' }).first().click()
+  await expect.poll(() => os(page, 's.screenTime.approvedSites')).toContain(site)
+})
+
+test('Siri app: attach a document and ask about it', async ({ page }) => {
+  await boot(page)
+  await launch(page, 'siri', 'new')
+  await expect(app(page, 'siri').getByRole('textbox', { name: 'Message Siri' })).toBeVisible()
+  await app(page, 'siri').getByRole('button', { name: 'Add' }).click()
+  await page.getByRole('menuitem', { name: 'Files' }).click()
+  await page.getByRole('button', { name: /^Attach Robot Budget/ }).click()
+  const input = app(page, 'siri').getByRole('textbox', { name: 'Message Siri' })
+  await input.fill('How much do we still need to raise?')
+  await app(page, 'siri').getByRole('button', { name: 'Send' }).click()
+  await expect(app(page, 'siri').getByText(/fundrais|raise/i).last()).toBeVisible({ timeout: 8000 })
+})
+
+test('Search or Ask finds the CarPlay settings page', async ({ page }) => {
+  await boot(page)
+  await page.keyboard.press('Alt+Space')
+  await page.locator('.spotlight').getByPlaceholder('Search or Ask').fill('carplay')
+  await page.locator('.spotlight').getByText('CarPlay', { exact: true }).first().click()
+  const settings = page.locator('.app-window.active[data-app="settings"]')
+  await settings.getByText('Family Car').first().click()
+  await expect(settings.getByText('AirPlay Video').first()).toBeVisible()
+})
