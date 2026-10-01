@@ -24,20 +24,20 @@ npm run test:e2e     # Playwright end-to-end tests (uses the bundled Chromium)
 | App Switcher | Swipe up and pause | `Alt+A` |
 | Control Center | Pull down from the top-right | `Alt+C` |
 | Notification Center | Pull down from the top-left | `Alt+N` |
-| Spotlight | Pull down on the Home Screen, or tap *Search* | `Alt+Space` |
+| Search or Ask | Pull down from the top centre, or tap *Search* | `Alt+Space` |
 | Siri | Hold the side button | `Alt+S` |
 | Lock | Side button | `Alt+L` |
 | Rotate | Panel button | `Alt+R` |
 | Dark mode | Panel button | `Alt+D` |
 | Back / dismiss | Swipe from the left edge | `Esc` |
 
-Touch-and-hold, or right-click, opens context menus on icons, notifications, bubbles and more. The panel next to the phone also has volume, Action button and Camera Control buttons. On a phone-sized browser, the simulator runs full-bleed.
+Touch-and-hold, or right-click, opens context menus on icons, notifications, bubbles and more. Right-click the Lock Screen to customise it. The panel next to the phone also has volume, Action button and Camera Control buttons. On a phone-sized browser, the simulator runs full-bleed.
 
 ## What's inside
 
-- **System shell:** Lock Screen (clock that can move to the top, widgets, stacked notifications, Now Playing you can swipe away, Live Activities, profile switching), Home Screen (widgets up to Extra Large, folders, edit mode, Today View, App Library, icon styles), Dynamic Island state machine (compact, minimal, expanded, transient events, landscape), Control Center with a controls gallery, Notification Center, Spotlight over a central search index, App Switcher, banners with quick reply, share sheet with content-based suggestions and fast AirDrop, and a keyboard with Write with Siri, dictation and multilingual suggestions.
-- **Liquid Glass:** material tokens driven by a single *Clear ↔ Tinted* setting, with real backdrop refraction on the dock and tab bars in Chromium.
-- **Siri AI:** intent engine with personal context across Messages, Mail, Calendar, Photos, Notes and Reminders, onscreen awareness, app actions, multi-step requests, follow-ups, broad knowledge, Camera Siri mode, Write with Siri, and a dedicated Siri app with conversation history.
+- **System shell:** Lock Screen (Classic or Compact clock, widgets, stacked notifications, Now Playing you can swipe away without pausing, Live Activities, profile switching, photo wallpapers you can *Extend* with Apple Intelligence), Home Screen (widgets up to Extra Large, folders, edit mode, Today View, App Library, icon styles), Dynamic Island state machine (compact, minimal, expanded, transient events, landscape), Control Center with a controls gallery, Notification Center, *Search or Ask* (which replaces Spotlight and hands questions to Siri) over a central search index, App Switcher, banners with quick reply, share sheet with content-based suggestions and fast AirDrop, and a keyboard with Write with Siri, dictation and multilingual suggestions.
+- **Liquid Glass:** material tokens driven by one *More Clear ↔ More Tinted* slider (Settings › Appearance), with real backdrop refraction on the dock and tab bars in Chromium.
+- **Siri AI:** the released iOS 27 presentation — a dark glass orb that grows out of the Dynamic Island, answers that expand from the island, and a chat view for follow-ups — over an intent engine with personal context across Messages, Mail, Calendar, Photos, Notes and Reminders, onscreen awareness, app actions, multi-step requests, follow-ups, broad knowledge, Camera Siri mode, Write with Siri, and a dedicated Siri app with conversation history.
 - **Apps:** Messages, FaceTime, Phone (Call Context), Safari (Organize by Topic, Notify Me, Describe an Extension), Mail, Photos (Clean Up, Extend, Reframe, ratings, shared albums), Camera (Siri mode), Settings (Screen Time and family controls, Accessibility, AirPods Custom EQ, alarm volume), Calendar, Reminders, Notes, Clock, Weather, Maps, Find My, Music (AutoMix), Podcasts, Home (camera search), Wallet and Apple Pay, Health, Fitness, Shortcuts (Describe a Shortcut), Image Playground, Journal, Freeform, Passwords, Files, Preview, News, Stocks, Calculator, Games and Magnifier.
 - **Audio:** music is synthesized live with Web Audio, so AirPods Custom EQ and AutoMix crossfades are audible. Alarm and timer sounds follow the independent alarm volume.
 
