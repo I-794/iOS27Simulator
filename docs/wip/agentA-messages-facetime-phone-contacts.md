@@ -23,7 +23,7 @@ pill, Call Context card from `callContext.ts` (mail facts + calendar). Routes: `
 
 ## FaceTime (`src/apps/facetime/`)
 Create Link (share sheet), New FaceTime picker (Audio/Video), poster tiles + recents, incoming screen (Remind Me/Message/Decline/Accept,
-ringtone; route `incoming/<id>`, a one-time demo call from Mia ~20 s after first open, plus a "Test incoming call" footnote button),
+ringtone; route `incoming/<id>` and a "Test incoming call" footnote button; the automatic demo call was removed),
 active call: procedural canvas remote video, draggable/snap-to-corner self-view PiP, flip, dual camera (split / picture-in-picture),
 glass control bar (mute, camera, flip, speaker route, SharePlay sheet, end), auto-hiding controls, network simulator
 (Excellent 1080p / Fair 540p blur / Poor 180p pixelated → audio-only fallback card / Lost → Reconnecting… → auto-recover),

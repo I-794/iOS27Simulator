@@ -13,8 +13,6 @@ import { useFT, useFTRecents, startFT, incomingFT, type FTRecent } from './ftSto
 import { CallView, FTPill } from './CallView'
 import './facetime.css'
 
-let demoIncomingScheduled = false
-
 export default function FaceTimeApp() {
   useAppRoute('facetime', (route) => {
     const m = route.match(/^(call|audio|video|incoming)\/(.+)$/)
@@ -22,16 +20,6 @@ export default function FaceTimeApp() {
     if (m[1] === 'incoming') incomingFT(m[2])
     else startFT(m[2], m[1] === 'audio')
   })
-  // A gentle demo: the first time FaceTime is opened, Mia calls a little later (if you're not busy).
-  useEffect(() => {
-    if (demoIncomingScheduled) return
-    demoIncomingScheduled = true
-    const t = window.setTimeout(() => {
-      const st = useOS.getState()
-      if (st.openApp === 'facetime' && !useFT.getState().call && !st.locked) incomingFT('mia')
-    }, 20_000)
-    return () => window.clearTimeout(t)
-  }, [])
   const call = useFT((s) => s.call)
   useOnscreen('facetime', call ? `FaceTime call with ${fullName(contactById(call.contactId))}` : 'FaceTime')
   return (
